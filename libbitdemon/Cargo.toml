@@ -7,3 +7,5 @@ edition = "2021"
 name = "bitdemon"
 
 [dependencies]
+byteorder = "1.5.0"
+log = "0.4.25"
