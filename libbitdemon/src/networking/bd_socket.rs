@@ -1,3 +1,4 @@
+use crate::networking::bd_message::BdMessage;
 use crate::networking::bd_session::BdSession;
 use crate::networking::session_manager::SessionManager;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -6,6 +7,10 @@ use std::io::{ErrorKind, Read};
 use std::net::TcpListener;
 use std::sync::Arc;
 use std::thread;
+
+pub trait BdMessageHandler {
+    fn handle_message(&self, session: &mut BdSession, message: BdMessage);
+}
 
 pub struct BdSocket {
     listener: TcpListener,
@@ -21,16 +26,20 @@ impl BdSocket {
         Ok(BdSocket { listener })
     }
 
-    pub fn run(&mut self) -> Result<(), std::io::Error> {
+    pub fn run(
+        &mut self,
+        message_handler: Arc<dyn BdMessageHandler + Send + Sync>,
+    ) -> Result<(), std::io::Error> {
         let session_manager = Arc::new(SessionManager::new());
         for stream in self.listener.incoming() {
             let stream = stream?;
 
             let session_manager = Arc::clone(&session_manager);
+            let message_handler = Arc::clone(&message_handler);
             thread::spawn(move || {
                 let mut session = BdSession::new(stream);
                 session_manager.register_session(&mut session);
-                BdSocket::handle_connection(&mut session);
+                BdSocket::handle_connection(&mut session, message_handler.as_ref());
                 session_manager.unregister_session(&session);
             });
         }
@@ -38,7 +47,7 @@ impl BdSocket {
         Ok(())
     }
 
-    fn handle_connection(session: &mut BdSession) {
+    fn handle_connection(session: &mut BdSession, message_handler: &dyn BdMessageHandler) {
         let connection_loop = |session: &mut BdSession| -> Result<(), std::io::Error> {
             loop {
                 let header = session.read_u32::<LittleEndian>()?;
@@ -59,6 +68,8 @@ impl BdSocket {
                         info!("[Session {}] Message with size {header}", session.id);
                         let mut msg = vec![0; header as usize];
                         session.read(msg.as_mut_slice())?;
+                        let message = BdMessage::new(msg);
+                        message_handler.handle_message(session, message);
                     }
                 }
             }

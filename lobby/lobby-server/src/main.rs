@@ -9,5 +9,5 @@ fn main() {
         Ok(s) => s,
     };
 
-    socket.run().unwrap();
+    // socket.run().unwrap();
 }
