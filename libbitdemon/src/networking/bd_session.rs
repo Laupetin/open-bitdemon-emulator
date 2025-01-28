@@ -2,8 +2,10 @@ use std::io;
 use std::io::BufReader;
 use std::net::{SocketAddr, TcpStream};
 
+pub type SessionId = u64;
+
 pub struct BdSession {
-    pub id: u64,
+    pub id: SessionId,
     stream: BufReader<TcpStream>,
 }
 

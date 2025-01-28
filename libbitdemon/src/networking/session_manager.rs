@@ -1,15 +1,15 @@
-use crate::networking::bd_session::BdSession;
+use crate::networking::bd_session::{BdSession, SessionId};
 use log::info;
 use std::sync::Mutex;
 
 pub struct SessionManager {
-    session_id_counter: Mutex<u64>,
+    session_id_counter: Mutex<SessionId>,
 }
 
 impl SessionManager {
     pub fn new() -> SessionManager {
         SessionManager {
-            session_id_counter: Mutex::new(0u64),
+            session_id_counter: Mutex::new(0),
         }
     }
 
