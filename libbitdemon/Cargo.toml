@@ -9,3 +9,5 @@ name = "bitdemon"
 [dependencies]
 byteorder = "1.5.0"
 log = "0.4.25"
+num-derive = "0.4.2"
+num-traits = "0.2.19"

@@ -132,6 +132,8 @@ version = "0.1.0"
 dependencies = [
  "byteorder",
  "log",
+ "num-derive",
+ "num-traits",
 ]
 
 [[package]]
