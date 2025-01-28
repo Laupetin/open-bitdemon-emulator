@@ -1,4 +1,4 @@
-use std::io::{BufReader, Cursor};
+use std::io::Cursor;
 
 pub struct BdMessage {
     pub reader: Cursor<Vec<u8>>,

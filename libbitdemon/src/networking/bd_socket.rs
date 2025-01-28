@@ -3,13 +3,37 @@ use crate::networking::bd_session::BdSession;
 use crate::networking::session_manager::SessionManager;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use log::{error, info};
+use std::error::Error;
+use std::fmt::Formatter;
 use std::io::{ErrorKind, Read};
 use std::net::TcpListener;
 use std::sync::Arc;
-use std::thread;
+use std::{fmt, io, thread};
+
+const MAX_MESSAGE_SIZE: u32 = 0x4000000;
+
+#[derive(Debug)]
+struct MessageTooLargeError {
+    msg_size: u32,
+}
+
+impl Error for MessageTooLargeError {}
+impl fmt::Display for MessageTooLargeError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Message was too large (size={}; max={})",
+            self.msg_size, MAX_MESSAGE_SIZE
+        )
+    }
+}
 
 pub trait BdMessageHandler {
-    fn handle_message(&self, session: &mut BdSession, message: BdMessage);
+    fn handle_message(
+        &self,
+        session: &mut BdSession,
+        message: BdMessage,
+    ) -> Result<(), Box<dyn Error>>;
 }
 
 pub struct BdSocket {
@@ -48,7 +72,7 @@ impl BdSocket {
     }
 
     fn handle_connection(session: &mut BdSession, message_handler: &dyn BdMessageHandler) {
-        let connection_loop = |session: &mut BdSession| -> Result<(), std::io::Error> {
+        let connection_loop = |session: &mut BdSession| -> Result<(), Box<dyn Error>> {
             loop {
                 let header = session.read_u32::<LittleEndian>()?;
 
@@ -65,11 +89,15 @@ impl BdSocket {
                         );
                     }
                     _ => {
+                        if header > MAX_MESSAGE_SIZE {
+                            return Err(Box::new(MessageTooLargeError { msg_size: header }));
+                        }
+
                         info!("[Session {}] Message with size {header}", session.id);
                         let mut msg = vec![0; header as usize];
                         session.read(msg.as_mut_slice())?;
                         let message = BdMessage::new(msg);
-                        message_handler.handle_message(session, message);
+                        message_handler.handle_message(session, message)?;
                     }
                 }
             }
@@ -77,10 +105,23 @@ impl BdSocket {
 
         let connection_result = connection_loop(session);
         match connection_result {
-            Err(e) => match e.kind() {
-                ErrorKind::Interrupted | ErrorKind::ConnectionReset => {}
-                _ => error!("Connection terminated: {}: {e}", e.kind()),
-            },
+            Err(e) => {
+                if let Some(e0) = e.downcast_ref::<io::Error>() {
+                    match e0.kind() {
+                        ErrorKind::Interrupted | ErrorKind::ConnectionReset => {}
+                        _ => error!(
+                            "[Session {}] Connection terminated: {}: {e}",
+                            session.id,
+                            e0.kind()
+                        ),
+                    }
+                } else {
+                    error!(
+                        "[Session {}] Session terminated with error: {e}",
+                        session.id
+                    )
+                }
+            }
             Ok(_) => (),
         }
     }

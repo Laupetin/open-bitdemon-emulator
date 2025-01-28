@@ -6,7 +6,7 @@ use log::info;
 pub struct SteamAuthHandler {}
 
 impl AuthHandler for SteamAuthHandler {
-    fn handle_message(&self, session: &mut BdSession, message: BdMessage) {
+    fn handle_message(&self, _session: &mut BdSession, _message: BdMessage) {
         info!("Trying to auth with Steam!");
     }
 }

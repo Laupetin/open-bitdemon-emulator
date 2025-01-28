@@ -5,10 +5,11 @@ use crate::auth_handler::{AuthHandler, AuthHandlerType};
 use bitdemon::networking::bd_message::BdMessage;
 use bitdemon::networking::bd_session::BdSession;
 use bitdemon::networking::bd_socket::{BdMessageHandler, BdSocket};
-use byteorder::{LittleEndian, ReadBytesExt};
-use log::{info, LevelFilter};
+use byteorder::ReadBytesExt;
+use log::LevelFilter;
 use num_traits::FromPrimitive;
 use std::collections::HashMap;
+use std::error::Error;
 use std::sync::{Arc, RwLock};
 
 struct AuthServer {
@@ -32,8 +33,12 @@ impl AuthServer {
 }
 
 impl BdMessageHandler for AuthServer {
-    fn handle_message(&self, session: &mut BdSession, mut message: BdMessage) {
-        let a = message.reader.read_u8().unwrap();
+    fn handle_message(
+        &self,
+        session: &mut BdSession,
+        mut message: BdMessage,
+    ) -> Result<(), Box<dyn Error>> {
+        let a = message.reader.read_u8()?;
 
         let handler_type = AuthHandlerType::from_u8(a).unwrap();
 
@@ -41,6 +46,8 @@ impl BdMessageHandler for AuthServer {
         let handler = handlers.get(&handler_type).unwrap();
 
         handler.handle_message(session, message);
+
+        Ok(())
     }
 }
 
