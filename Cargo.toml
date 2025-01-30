@@ -33,3 +33,11 @@ members = [
     "lobby/service-youtube"
 ]
 resolver = "1"
+
+[workspace.dependencies]
+byteorder = "1.5.0"
+env_logger = "0.11.6"
+log = "0.4.25"
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+snafu = "0.8.5"
