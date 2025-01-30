@@ -2,10 +2,9 @@ mod auth_handler;
 
 use crate::auth_handler::steam::SteamAuthHandler;
 use crate::auth_handler::{AuthHandler, AuthHandlerType};
-use bitdemon::networking::bd_message::BdMessage;
+use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::networking::bd_session::BdSession;
 use bitdemon::networking::bd_socket::{BdMessageHandler, BdSocket};
-use byteorder::ReadBytesExt;
 use log::LevelFilter;
 use num_traits::FromPrimitive;
 use std::collections::HashMap;
@@ -46,7 +45,6 @@ impl BdMessageHandler for AuthServer {
         let handler = handlers.get(&handler_type).unwrap();
 
         handler.handle_message(session, message);
-
         Ok(())
     }
 }

@@ -1,31 +1,21 @@
-use crate::networking::bd_message::BdMessage;
+use crate::messaging::bd_message::BdMessage;
 use crate::networking::bd_session::BdSession;
 use crate::networking::session_manager::SessionManager;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use log::{error, info};
+use snafu::{ensure, Snafu};
 use std::error::Error;
-use std::fmt::Formatter;
 use std::io::{ErrorKind, Read};
 use std::net::TcpListener;
 use std::sync::Arc;
-use std::{fmt, io, thread};
+use std::{io, thread};
 
 const MAX_MESSAGE_SIZE: u32 = 0x4000000;
 
-#[derive(Debug)]
+#[derive(Debug, Snafu)]
+#[snafu(display("Message was too large (size={msg_size}, max={MAX_MESSAGE_SIZE})"))]
 struct MessageTooLargeError {
     msg_size: u32,
-}
-
-impl Error for MessageTooLargeError {}
-impl fmt::Display for MessageTooLargeError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Message was too large (size={}; max={})",
-            self.msg_size, MAX_MESSAGE_SIZE
-        )
-    }
 }
 
 pub trait BdMessageHandler {
@@ -42,7 +32,7 @@ pub struct BdSocket {
 
 impl BdSocket {
     /// Creates a new BdSocket instance and binds it to the specified port.
-    pub fn new(port: u16) -> Result<BdSocket, std::io::Error> {
+    pub fn new(port: u16) -> Result<BdSocket, io::Error> {
         let listener = TcpListener::bind(format!("0.0.0.0:{port}"))?;
 
         info!("Opened bitdemon socket on port {port}");
@@ -53,7 +43,7 @@ impl BdSocket {
     pub fn run(
         &mut self,
         message_handler: Arc<dyn BdMessageHandler + Send + Sync>,
-    ) -> Result<(), std::io::Error> {
+    ) -> Result<(), io::Error> {
         let session_manager = Arc::new(SessionManager::new());
         for stream in self.listener.incoming() {
             let stream = stream?;
@@ -89,14 +79,15 @@ impl BdSocket {
                         );
                     }
                     _ => {
-                        if header > MAX_MESSAGE_SIZE {
-                            return Err(Box::new(MessageTooLargeError { msg_size: header }));
-                        }
+                        ensure!(
+                            header <= MAX_MESSAGE_SIZE,
+                            MessageTooLargeSnafu { msg_size: header }
+                        );
 
                         info!("[Session {}] Message with size {header}", session.id);
                         let mut msg = vec![0; header as usize];
                         session.read(msg.as_mut_slice())?;
-                        let message = BdMessage::new(msg);
+                        let message = BdMessage::new(&session, msg)?;
                         message_handler.handle_message(session, message)?;
                     }
                 }

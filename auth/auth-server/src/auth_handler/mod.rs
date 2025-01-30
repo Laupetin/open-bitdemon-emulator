@@ -1,4 +1,4 @@
-﻿use bitdemon::networking::bd_message::BdMessage;
+﻿use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::networking::bd_session::BdSession;
 use num_derive::{FromPrimitive, ToPrimitive};
 

@@ -1,4 +1,4 @@
-use crate::networking::bd_message::BdMessage;
+use crate::messaging::bd_message::BdMessage;
 use crate::networking::bd_session::BdSession;
 
 pub trait BdServer {

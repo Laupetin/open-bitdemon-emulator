@@ -1,6 +1,6 @@
 ﻿use num_derive::{FromPrimitive, ToPrimitive};
 
-#[derive(Debug, Eq, PartialEq, Hash, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, FromPrimitive, ToPrimitive)]
 #[repr(u32)]
 pub enum BdErrorCode {
     NoError = 0,
