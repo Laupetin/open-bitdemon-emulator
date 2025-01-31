@@ -1,6 +1,6 @@
 ﻿use crate::auth_handler::AuthHandler;
 use bitdemon::messaging::bd_message::BdMessage;
-use bitdemon::messaging::bd_reader::StreamMode;
+use bitdemon::messaging::StreamMode;
 use bitdemon::networking::bd_session::BdSession;
 use log::info;
 

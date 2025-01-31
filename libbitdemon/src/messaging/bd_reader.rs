@@ -1,15 +1,10 @@
 ﻿use crate::messaging::bd_data_type::{BdDataType, BufferDataType};
+use crate::messaging::StreamMode;
 use byteorder::{LittleEndian, ReadBytesExt};
 use snafu::{ensure, Snafu};
 use std::cmp::min;
 use std::error::Error;
 use std::io::{BufRead, Cursor, Read};
-
-#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone)]
-pub enum StreamMode {
-    ByteMode,
-    BitMode,
-}
 
 #[derive(Debug, Snafu)]
 enum BdReaderError {
@@ -521,7 +516,7 @@ impl BdReader {
         Ok(f64::from_le_bytes(temp_buffer))
     }
 
-    pub fn read_string(&mut self) -> Result<String, Box<dyn Error>> {
+    pub fn read_str(&mut self) -> Result<String, Box<dyn Error>> {
         ensure!(
             self.mode == StreamMode::ByteMode,
             ModeSnafu {
@@ -847,7 +842,7 @@ impl BdReader {
         Ok(result)
     }
 
-    pub fn read_string_array(&mut self) -> Result<Vec<String>, Box<dyn Error>> {
+    pub fn read_str_array(&mut self) -> Result<Vec<String>, Box<dyn Error>> {
         ensure!(
             self.mode == StreamMode::ByteMode,
             ModeSnafu {
