@@ -81,7 +81,7 @@ impl<'a> BdWriter<'a> {
         while bits_left > 0 {
             let mut in_bits = 8;
             let mut in_byte = buf[src_offset];
-            src_offset += src_offset;
+            src_offset += 1;
             if bits_left < 8 {
                 in_bits = bits_left;
                 in_byte &= 0xFF >> (8 - bits_left);
@@ -93,7 +93,7 @@ impl<'a> BdWriter<'a> {
                 if self.bit_offset + in_bits > 8 {
                     let used_bits = 8 - self.bit_offset;
                     self.cursor.write_u8(self.last_byte)?;
-                    self.bit_offset += in_bits - 8;
+                    self.bit_offset = (self.bit_offset as i64 + (in_bits as i64 - 8)) as usize;
                     self.last_byte = in_byte >> used_bits;
                 } else if self.bit_offset + in_bits == 8 {
                     self.cursor.write_u8(self.last_byte)?;
@@ -115,7 +115,7 @@ impl<'a> BdWriter<'a> {
         Ok(())
     }
 
-    pub fn write_bytes(&mut self, buffer: &mut [u8]) -> Result<(), Box<dyn Error>> {
+    pub fn write_bytes(&mut self, buffer: &[u8]) -> Result<(), Box<dyn Error>> {
         if self.mode == StreamMode::BitMode {
             self.write_bits(buffer, buffer.len() * 8)
         } else {
@@ -604,6 +604,23 @@ mod tests {
     }
 
     #[test]
+    fn ensure_can_write_over_byte_boundary_with_less_than_one_byte() {
+        let mut out = Vec::new();
+
+        {
+            let mut writer = BdWriter::new(&mut out);
+            writer.set_mode(StreamMode::BitMode);
+
+            writer.write_bits(&[0x3F], 6).unwrap();
+            writer.write_bits(&[0x06], 4).unwrap();
+            writer.write_bits(&[0x3F], 6).unwrap();
+        }
+
+        assert_eq!(out[0], 0xBF);
+        assert_eq!(out[1], 0xFD);
+    }
+
+    #[test]
     fn ensure_can_write_multiple_times_in_one_byte() {
         let mut out = Vec::new();
 
@@ -618,5 +635,41 @@ mod tests {
         }
 
         assert_eq!(out[0], 0x99);
+    }
+
+    #[test]
+    fn ensure_can_write_u32() {
+        let mut out = Vec::new();
+
+        {
+            let mut writer = BdWriter::new(&mut out);
+            writer.set_mode(StreamMode::BitMode);
+
+            writer.write_u32(0x32).unwrap();
+        }
+
+        assert_eq!(out[0], 0x32);
+        assert_eq!(out[1], 0);
+        assert_eq!(out[2], 0);
+        assert_eq!(out[3], 0);
+    }
+
+    #[test]
+    fn ensure_can_write_u32_with_types() {
+        let mut out = Vec::new();
+
+        {
+            let mut writer = BdWriter::new(&mut out);
+            writer.set_mode(StreamMode::BitMode);
+            writer.set_type_checked(true);
+
+            writer.write_u32(0x32).unwrap();
+        }
+
+        assert_eq!(out[0], 0x48);
+        assert_eq!(out[1], 0x06);
+        assert_eq!(out[2], 0);
+        assert_eq!(out[3], 0);
+        assert_eq!(out[4], 0);
     }
 }

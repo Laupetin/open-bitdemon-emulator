@@ -7,6 +7,7 @@ pub type SessionId = u64;
 pub struct BdSession {
     pub id: SessionId,
     stream: BufReader<TcpStream>,
+    session_key: Option<[u8; 24]>,
 }
 
 impl io::Read for BdSession {
@@ -32,6 +33,7 @@ impl BdSession {
         BdSession {
             id: 0,
             stream: reader,
+            session_key: None,
         }
     }
 
