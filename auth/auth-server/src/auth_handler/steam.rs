@@ -3,6 +3,7 @@
 };
 use crate::auth_handler::{AuthHandler, AuthMessageType};
 use crate::response::auth_response::AuthResponse;
+use crate::result::auth_proof::ClientOpaqueAuthProof;
 use crate::result::auth_ticket::{AuthTicket, BdAuthTicketType};
 use bitdemon::crypto::{generate_iv_from_seed, generate_iv_seed};
 use bitdemon::messaging::bd_message::BdMessage;
@@ -13,7 +14,8 @@ use bitdemon::networking::bd_session::BdSession;
 use cbc::cipher::block_padding::ZeroPadding;
 use cbc::cipher::{BlockEncryptMut, KeyIvInit};
 use chrono::Utc;
-use log::info;
+use des::cipher::BlockSizeUser;
+use log::{debug, info};
 use snafu::{ensure, Snafu};
 use std::error::Error;
 
@@ -30,6 +32,7 @@ enum SteamAuthError {
 
 struct SteamAuthResponse {
     ticket: AuthTicket,
+    proof: ClientOpaqueAuthProof,
 }
 
 type TdesCbcEnc = cbc::Encryptor<des::TdesEde3>;
@@ -55,15 +58,20 @@ impl AuthResponse for SteamAuthResponse {
         }
 
         let iv = generate_iv_from_seed(seed);
+        let ticket_buf_len = ticket_buf.len();
+        ticket_buf.resize(
+            ticket_buf_len.next_multiple_of(des::TdesEde3::block_size()),
+            0,
+        );
 
-        let key = [0x42; 24];
-        let iv = [0x24; 8];
-        let mut buf = [0u8; 48];
-        let buf_len = buf.len();
-        let seed = 0;
-        let a = TdesCbcEnc::new(&key.into(), &iv.into())
-            .encrypt_padded_mut::<ZeroPadding>(&mut buf, buf_len)
+        let encrypted = TdesCbcEnc::new(&self.ticket.session_key.into(), &iv.into())
+            .encrypt_padded_mut::<ZeroPadding>(&mut ticket_buf, ticket_buf_len)
             .unwrap();
+        writer.write_bytes(encrypted)?;
+
+        let proof_data = self.proof.serialize();
+        writer.write_bytes(&proof_data)?;
+
         Ok(())
     }
 }
@@ -111,6 +119,8 @@ impl AuthHandler for SteamAuthHandler {
             session_key: request_data.session_key,
         };
 
-        Ok(Box::new(SteamAuthResponse { ticket }))
+        let proof = ClientOpaqueAuthProof {};
+
+        Ok(Box::new(SteamAuthResponse { ticket, proof }))
     }
 }
