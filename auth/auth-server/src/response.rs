@@ -8,9 +8,7 @@ use std::error::Error;
 pub trait AuthResponse {
     fn message_type(&self) -> AuthMessageType;
     fn error_code(&self) -> BdErrorCode;
-    fn write_auth_data(&self, _writer: &mut BdWriter) -> Result<(), Box<dyn Error>> {
-        Ok(())
-    }
+    fn write_auth_data(&self, writer: &mut BdWriter) -> Result<(), Box<dyn Error>>;
 }
 
 impl dyn AuthResponse {
@@ -33,5 +31,33 @@ impl dyn AuthResponse {
         }
 
         Ok(BdResponse::unencrypted(buf))
+    }
+}
+
+pub struct AuthResponseWithOnlyCode {
+    message_type: AuthMessageType,
+    error_code: BdErrorCode,
+}
+
+impl AuthResponseWithOnlyCode {
+    pub fn new(message_type: AuthMessageType, error_code: BdErrorCode) -> AuthResponseWithOnlyCode {
+        AuthResponseWithOnlyCode {
+            message_type,
+            error_code,
+        }
+    }
+}
+
+impl AuthResponse for AuthResponseWithOnlyCode {
+    fn message_type(&self) -> AuthMessageType {
+        self.message_type
+    }
+
+    fn error_code(&self) -> BdErrorCode {
+        self.error_code
+    }
+
+    fn write_auth_data(&self, _writer: &mut BdWriter) -> Result<(), Box<dyn Error>> {
+        Ok(())
     }
 }

@@ -4,10 +4,13 @@ mod result;
 
 use crate::auth_handler::steam::SteamAuthHandler;
 use crate::auth_handler::{AuthHandler, AuthMessageType};
+use crate::response::{AuthResponse, AuthResponseWithOnlyCode};
 use bitdemon::messaging::bd_message::BdMessage;
+use bitdemon::messaging::BdErrorCode::AuthIllegalOperation;
 use bitdemon::networking::bd_session::BdSession;
 use bitdemon::networking::bd_socket::BdMessageHandler;
 use num_traits::FromPrimitive;
+use snafu::{ensure, Snafu};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
@@ -32,22 +35,43 @@ impl AuthServer {
     }
 }
 
+#[derive(Debug, Snafu)]
+enum AuthServerError {
+    #[snafu(display("The client specified an illegal message type: {message_type_input}"))]
+    IllegalMessageTypeError { message_type_input: u8 },
+}
+
 impl BdMessageHandler for AuthServer {
     fn handle_message(
         &self,
         session: &mut BdSession,
         mut message: BdMessage,
     ) -> Result<(), Box<dyn Error>> {
-        let a = message.reader.read_u8()?;
+        let message_type_input = message.reader.read_u8()?;
 
-        let handler_type = AuthMessageType::from_u8(a).unwrap();
+        let handler_type = AuthMessageType::from_u8(message_type_input)
+            .ok_or_else(|| IllegalMessageTypeSnafu { message_type_input }.build())?;
 
         let handlers = self.auth_handlers.read().unwrap();
-        let handler = handlers.get(&handler_type).unwrap();
+        let maybe_handler = handlers.get(&handler_type);
 
-        let auth_response = handler.handle_message(session, message)?;
-        auth_response.response()?.send(session)?;
+        match maybe_handler {
+            Some(handler) => {
+                let auth_response = handler.handle_message(session, message)?;
+                auth_response.response()?.send(session)?;
 
-        Ok(())
+                Ok(())
+            }
+            None => {
+                let only: Box<dyn AuthResponse> = Box::from(AuthResponseWithOnlyCode::new(
+                    handler_type.reply_code(),
+                    AuthIllegalOperation,
+                ));
+
+                only.response()?.send(session)?;
+
+                Ok(())
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@
     AuthenticationRequest, SteamAuthenticationRequest,
 };
 use crate::auth_handler::{AuthHandler, AuthMessageType};
-use crate::response::auth_response::AuthResponse;
+use crate::response::AuthResponse;
 use crate::result::auth_proof::ClientOpaqueAuthProof;
 use crate::result::auth_ticket::{AuthTicket, BdAuthTicketType};
 use bitdemon::crypto::{encrypt_buffer_in_place, generate_iv_from_seed, generate_iv_seed};

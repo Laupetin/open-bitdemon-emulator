@@ -1,10 +1,11 @@
-﻿use crate::response::auth_response::AuthResponse;
+﻿use crate::response::AuthResponse;
 use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::networking::bd_session::BdSession;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 use std::error::Error;
 
-#[derive(Debug, Eq, PartialEq, Hash, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, FromPrimitive, ToPrimitive)]
 #[repr(u8)]
 pub enum AuthMessageType {
     CreateAccountRequest = 0x0,
@@ -49,6 +50,17 @@ pub enum AuthMessageType {
     WiiUForMmpReply2 = 0x27,
     WiiUSecondaryForMmpRequest = 0x28,
     WiiUSecondaryForMmpReply = 0x29,
+}
+
+impl AuthMessageType {
+    pub fn is_request_code(&self) -> bool {
+        self.to_u8().unwrap() % 2 == 0
+    }
+
+    pub fn reply_code(&self) -> AuthMessageType {
+        let code = self.to_u8().unwrap();
+        Self::from_u8((code - (code % 2)) + 1).unwrap()
+    }
 }
 
 pub trait AuthHandler {
