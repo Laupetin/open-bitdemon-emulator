@@ -32,6 +32,6 @@ impl dyn AuthResponse {
             self.write_auth_data(&mut writer)?;
         }
 
-        Ok(BdResponse::new(buf))
+        Ok(BdResponse::unencrypted(buf))
     }
 }
