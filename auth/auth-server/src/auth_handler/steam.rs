@@ -15,20 +15,12 @@ use cbc::cipher::block_padding::ZeroPadding;
 use cbc::cipher::{BlockEncryptMut, KeyIvInit};
 use chrono::Utc;
 use des::cipher::BlockSizeUser;
-use log::{debug, info};
-use snafu::{ensure, Snafu};
+use log::info;
 use std::error::Error;
 
 pub struct SteamAuthHandler {}
 
-const MAX_TICKET_LENGTH: usize = 1024usize;
 const TICKET_ISSUE_LENGTH: i64 = 5 * 60 * 1000;
-
-#[derive(Debug, Snafu)]
-enum SteamAuthError {
-    #[snafu(display("Ticket is too long len={ticket_length} max={MAX_TICKET_LENGTH}"))]
-    TicketTooLongError { ticket_length: usize },
-}
 
 struct SteamAuthResponse {
     ticket: AuthTicket,

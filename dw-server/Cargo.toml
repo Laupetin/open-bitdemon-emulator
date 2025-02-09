@@ -1,0 +1,12 @@
+[package]
+name = "dw-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+auth-server = { path = "../auth/auth-server" }
+lobby-server = { path = "../lobby/lobby-server" }
+libbitdemon = { path = "../libbitdemon" }
+
+env_logger.workspace = true
+log.workspace = true

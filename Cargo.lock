@@ -225,6 +225,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "dw-server"
+version = "0.1.0"
+dependencies = [
+ "auth-server",
+ "env_logger",
+ "libbitdemon",
+ "lobby-server",
+ "log",
+]
+
+[[package]]
 name = "env_filter"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -356,6 +367,8 @@ dependencies = [
  "env_logger",
  "libbitdemon",
  "log",
+ "num-derive",
+ "num-traits",
 ]
 
 [[package]]
