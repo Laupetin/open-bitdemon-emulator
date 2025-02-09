@@ -56,7 +56,7 @@ impl BdSerialize for AuthTicket {
         );
 
         writer.write_bytes(self.username.as_ref())?;
-        for _ in [self.username.len()..64] {
+        for _ in self.username.len()..64 {
             writer.write_bytes(&[0])?;
         }
 
