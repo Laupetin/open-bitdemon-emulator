@@ -13,14 +13,6 @@ pub enum StreamMode {
     BitMode,
 }
 
-pub enum BdMessageType {
-    LobbyServiceTaskReply = 1,
-    LobbyServicePushMessage = 2,
-    LsgServiceError = 3,
-    LsgServiceConnectionId = 4,
-    LsgServiceTaskReply = 5,
-}
-
 #[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, FromPrimitive, ToPrimitive)]
 #[repr(u32)]
 pub enum BdErrorCode {

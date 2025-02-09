@@ -6,11 +6,13 @@ use crate::auth_handler::steam::SteamAuthHandler;
 use crate::auth_handler::{AuthHandler, AuthMessageType};
 use crate::response::{AuthResponse, AuthResponseWithOnlyCode};
 use bitdemon::messaging::bd_message::BdMessage;
+use bitdemon::messaging::bd_response::ResponseCreator;
 use bitdemon::messaging::BdErrorCode::AuthIllegalOperation;
 use bitdemon::networking::bd_session::BdSession;
 use bitdemon::networking::bd_socket::BdMessageHandler;
+use log::warn;
 use num_traits::FromPrimitive;
-use snafu::{ensure, Snafu};
+use snafu::Snafu;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
@@ -58,17 +60,21 @@ impl BdMessageHandler for AuthServer {
         match maybe_handler {
             Some(handler) => {
                 let auth_response = handler.handle_message(session, message)?;
-                auth_response.response()?.send(session)?;
+                auth_response.to_response()?.send(session)?;
 
                 Ok(())
             }
             None => {
+                warn!(
+                    "[Session {}] Tried to request unavailable auth handler {handler_type:?}",
+                    session.id
+                );
                 let only: Box<dyn AuthResponse> = Box::from(AuthResponseWithOnlyCode::new(
                     handler_type.reply_code(),
                     AuthIllegalOperation,
                 ));
 
-                only.response()?.send(session)?;
+                only.to_response()?.send(session)?;
 
                 Ok(())
             }

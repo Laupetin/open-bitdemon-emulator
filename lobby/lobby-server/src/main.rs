@@ -1,5 +1,7 @@
 use bitdemon::networking::bd_socket::BdSocket;
+use lobby_server::LobbyServer;
 use log::LevelFilter;
+use std::sync::Arc;
 
 fn main() {
     env_logger::builder().filter_level(LevelFilter::Info).init();
@@ -9,5 +11,5 @@ fn main() {
         Ok(s) => s,
     };
 
-    // socket.run().unwrap();
+    socket.run_sync(Arc::new(LobbyServer::new())).unwrap();
 }

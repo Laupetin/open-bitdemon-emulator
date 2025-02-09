@@ -1,14 +1,20 @@
-﻿use bitdemon::messaging::bd_message::BdMessage;
-use bitdemon::messaging::bd_response::BdResponse;
+﻿mod response;
+
+use crate::response::task_reply::TaskReply;
+use bitdemon::messaging::bd_message::BdMessage;
+use bitdemon::messaging::bd_response::{BdResponse, ResponseCreator};
+use bitdemon::messaging::BdErrorCode::ServiceNotAvailable;
 use bitdemon::networking::bd_session::BdSession;
 use bitdemon::networking::bd_socket::BdMessageHandler;
+use log::warn;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
+use snafu::Snafu;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
 
-#[derive(Debug, Eq, PartialEq, Hash, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, FromPrimitive, ToPrimitive)]
 #[repr(u8)]
 pub enum LobbyServiceId {
     Teams = 3,
@@ -197,22 +203,44 @@ impl LobbyServer {
     }
 }
 
+#[derive(Debug, Snafu)]
+enum LobbyServerError {
+    #[snafu(display("The client specified an illegal service id: {service_id_input}"))]
+    IllegalServiceIdError { service_id_input: u8 },
+}
+
 impl BdMessageHandler for LobbyServer {
     fn handle_message(
         &self,
         session: &mut BdSession,
         mut message: BdMessage,
     ) -> Result<(), Box<dyn Error>> {
-        let a = message.reader.read_u8()?;
+        let service_id_input = message.reader.read_u8()?;
 
-        let handler_type = LobbyServiceId::from_u8(a).unwrap();
+        let service_id = LobbyServiceId::from_u8(service_id_input)
+            .ok_or_else(|| IllegalServiceIdSnafu { service_id_input }.build())?;
 
         let handlers = self.lobby_handlers.read().unwrap();
-        let handler = handlers.get(&handler_type).unwrap();
+        let maybe_handler = handlers.get(&service_id);
 
-        let response = handler.handle_message(session, message)?;
-        response.send(session)?;
+        match maybe_handler {
+            Some(handler) => {
+                let response = handler.handle_message(session, message)?;
+                response.send(session)?;
 
-        Ok(())
+                Ok(())
+            }
+            None => {
+                warn!(
+                    "[Session {}] Tried to call unavailable service {service_id:?}",
+                    session.id
+                );
+                TaskReply::with_only_error_code(ServiceNotAvailable)
+                    .to_response()?
+                    .send(session)?;
+
+                Ok(())
+            }
+        }
     }
 }

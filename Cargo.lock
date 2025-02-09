@@ -370,6 +370,7 @@ dependencies = [
  "log",
  "num-derive",
  "num-traits",
+ "snafu",
 ]
 
 [[package]]

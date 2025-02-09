@@ -1,5 +1,5 @@
 ﻿use crate::auth_handler::AuthMessageType;
-use bitdemon::messaging::bd_response::BdResponse;
+use bitdemon::messaging::bd_response::{BdResponse, ResponseCreator};
 use bitdemon::messaging::bd_writer::BdWriter;
 use bitdemon::messaging::{BdErrorCode, StreamMode};
 use num_traits::ToPrimitive;
@@ -11,8 +11,8 @@ pub trait AuthResponse {
     fn write_auth_data(&self, writer: &mut BdWriter) -> Result<(), Box<dyn Error>>;
 }
 
-impl dyn AuthResponse {
-    pub fn response(&self) -> Result<BdResponse, Box<dyn Error>> {
+impl ResponseCreator for dyn AuthResponse {
+    fn to_response(&self) -> Result<BdResponse, Box<dyn Error>> {
         let mut buf = Vec::new();
 
         {

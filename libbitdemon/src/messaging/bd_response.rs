@@ -5,8 +5,12 @@ use std::error::Error;
 use std::io::Write;
 
 pub struct BdResponse {
-    encrypted: bool,
+    should_encrypt: bool,
     data: Vec<u8>,
+}
+
+pub trait ResponseCreator {
+    fn to_response(&self) -> Result<BdResponse, Box<dyn Error>>;
 }
 
 #[derive(Debug, Snafu)]
@@ -18,13 +22,19 @@ enum BdResponseError {
 impl BdResponse {
     pub fn unencrypted(data: Vec<u8>) -> Self {
         BdResponse {
-            encrypted: false,
+            should_encrypt: false,
+            data,
+        }
+    }
+    pub fn encrypted_if_available(data: Vec<u8>) -> Self {
+        BdResponse {
+            should_encrypt: true,
             data,
         }
     }
 
     pub fn send(&self, session: &mut BdSession) -> Result<(), Box<dyn Error>> {
-        if self.encrypted {
+        if self.should_encrypt && session.session_key.is_some() {
             ensure!(session.session_key.is_some(), NoSessionKeyAvailableSnafu {});
             todo!();
         } else {

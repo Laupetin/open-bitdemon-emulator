@@ -82,11 +82,8 @@ impl AuthHandler for SteamAuthHandler {
         };
 
         info!(
-            "Trying to auth with Steam iv_seed={:x} title={:?} session_key={:?} username={}",
-            authentication_request.iv_seed,
-            authentication_request.title,
-            request_data.session_key,
-            &request_data.username
+            "Trying to auth with Steam iv_seed={:x} title={:?} username={}",
+            authentication_request.iv_seed, authentication_request.title, &request_data.username
         );
 
         let now = Utc::now();

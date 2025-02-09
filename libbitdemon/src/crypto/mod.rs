@@ -6,7 +6,7 @@ use rand::RngCore;
 use tiger::{Digest, Tiger};
 
 type TdesCbcEnc = cbc::Encryptor<des::TdesEde3>;
-type TdesCbcDec = cbc::Decryptor<des::TdesEde3>;
+// type TdesCbcDec = cbc::Decryptor<des::TdesEde3>;
 
 pub fn generate_iv_seed() -> u32 {
     rand::rng().next_u32()
