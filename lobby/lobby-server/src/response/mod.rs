@@ -1,5 +1,6 @@
 ﻿use num_derive::{FromPrimitive, ToPrimitive};
 
+pub mod lsg_reply;
 pub mod task_reply;
 
 #[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, FromPrimitive, ToPrimitive)]

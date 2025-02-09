@@ -3,8 +3,8 @@
 };
 use crate::auth_handler::{AuthHandler, AuthMessageType};
 use crate::response::AuthResponse;
-use crate::result::auth_proof::ClientOpaqueAuthProof;
 use crate::result::auth_ticket::{AuthTicket, BdAuthTicketType};
+use bitdemon::auth::auth_proof::ClientOpaqueAuthProof;
 use bitdemon::crypto::{encrypt_buffer_in_place, generate_iv_from_seed, generate_iv_seed};
 use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::messaging::bd_serialization::{BdDeserialize, BdSerialize};
@@ -88,7 +88,8 @@ impl AuthHandler for SteamAuthHandler {
 
         let now = Utc::now();
         let issued = (now.timestamp() % (u32::MAX as i64)) as u32;
-        let expires = ((now.timestamp() + TICKET_ISSUE_LENGTH) % (u32::MAX as i64)) as u32;
+        let expires_i64 = now.timestamp() + TICKET_ISSUE_LENGTH;
+        let expires = ((expires_i64) % (u32::MAX as i64)) as u32;
 
         let ticket = AuthTicket {
             ticket_type: BdAuthTicketType::UserToServiceTicket,
@@ -101,7 +102,14 @@ impl AuthHandler for SteamAuthHandler {
             session_key: request_data.session_key,
         };
 
-        let proof = ClientOpaqueAuthProof {};
+        let proof = ClientOpaqueAuthProof {
+            title: ticket.title,
+            time_expires: expires_i64,
+            license_id: ticket.license_id,
+            user_id: ticket.user_id,
+            session_key: ticket.session_key,
+            username: String::from(&ticket.username),
+        };
 
         Ok(Box::new(SteamAuthResponse { ticket, proof }))
     }

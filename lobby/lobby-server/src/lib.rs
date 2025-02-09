@@ -1,6 +1,9 @@
 ﻿mod response;
+mod service;
 
 use crate::response::task_reply::TaskReply;
+use crate::service::lobby::LobbyServiceHandler;
+use crate::LobbyServiceId::LobbyService;
 use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::messaging::bd_response::{BdResponse, ResponseCreator};
 use bitdemon::messaging::BdErrorCode::ServiceNotAvailable;
@@ -190,12 +193,10 @@ pub struct LobbyServer {
 
 impl LobbyServer {
     pub fn new() -> Self {
-        let handlers: HashMap<LobbyServiceId, Arc<dyn LobbyHandler + Sync + Send>> = HashMap::new();
+        let mut handlers: HashMap<LobbyServiceId, Arc<dyn LobbyHandler + Sync + Send>> =
+            HashMap::new();
 
-        // handlers.insert(
-        //     AuthMessageType::SteamForMmpRequest,
-        //     Arc::new(SteamAuthHandler::new()),
-        // );
+        handlers.insert(LobbyService, Arc::new(LobbyServiceHandler::new()));
 
         LobbyServer {
             lobby_handlers: RwLock::new(handlers),
@@ -215,6 +216,7 @@ impl BdMessageHandler for LobbyServer {
         session: &mut BdSession,
         mut message: BdMessage,
     ) -> Result<(), Box<dyn Error>> {
+        message.reader.set_type_checked(false);
         let service_id_input = message.reader.read_u8()?;
 
         let service_id = LobbyServiceId::from_u8(service_id_input)
@@ -225,6 +227,7 @@ impl BdMessageHandler for LobbyServer {
 
         match maybe_handler {
             Some(handler) => {
+                message.reader.set_type_checked(true);
                 let response = handler.handle_message(session, message)?;
                 response.send(session)?;
 
