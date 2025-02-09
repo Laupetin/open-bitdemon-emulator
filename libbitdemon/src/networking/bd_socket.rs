@@ -8,6 +8,7 @@ use std::error::Error;
 use std::io::{ErrorKind, Read};
 use std::net::TcpListener;
 use std::sync::Arc;
+use std::thread::JoinHandle;
 use std::{io, thread};
 
 const MAX_MESSAGE_SIZE: u32 = 0x4000000;
@@ -27,7 +28,7 @@ pub trait BdMessageHandler {
 }
 
 pub struct BdSocket {
-    listener: TcpListener,
+    listener: Option<TcpListener>,
 }
 
 impl BdSocket {
@@ -37,15 +38,17 @@ impl BdSocket {
 
         info!("Opened bitdemon socket on port {port}");
 
-        Ok(BdSocket { listener })
+        Ok(BdSocket {
+            listener: Some(listener),
+        })
     }
 
-    pub fn run(
-        &mut self,
+    fn listen(
+        listener: &TcpListener,
         message_handler: Arc<dyn BdMessageHandler + Send + Sync>,
     ) -> Result<(), io::Error> {
         let session_manager = Arc::new(SessionManager::new());
-        for stream in self.listener.incoming() {
+        for stream in listener.incoming() {
             let stream = stream?;
 
             let session_manager = Arc::clone(&session_manager);
@@ -59,6 +62,24 @@ impl BdSocket {
         }
 
         Ok(())
+    }
+
+    pub fn run_sync(
+        &mut self,
+        message_handler: Arc<dyn BdMessageHandler + Send + Sync>,
+    ) -> Result<(), io::Error> {
+        Self::listen(self.listener.as_ref().unwrap(), message_handler)
+    }
+
+    pub fn run_async(
+        &mut self,
+        message_handler: Arc<dyn BdMessageHandler + Send + Sync>,
+    ) -> JoinHandle<Result<(), io::Error>> {
+        let message_handler = Arc::clone(&message_handler);
+        let listener = self.listener.take();
+        thread::spawn(move || -> Result<(), io::Error> {
+            Self::listen(listener.as_ref().unwrap(), message_handler)
+        })
     }
 
     fn handle_connection(session: &mut BdSession, message_handler: &dyn BdMessageHandler) {

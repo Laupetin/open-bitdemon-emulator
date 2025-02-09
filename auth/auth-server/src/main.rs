@@ -12,5 +12,5 @@ fn main() {
     };
 
     let auth_server = Arc::new(AuthServer::new());
-    socket.run(auth_server).unwrap();
+    socket.run_sync(auth_server).unwrap();
 }

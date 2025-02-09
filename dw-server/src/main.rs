@@ -25,8 +25,11 @@ fn main() {
     };
 
     let auth_server = Arc::new(AuthServer::new());
-    auth_socket.run(auth_server).unwrap();
+    let auth_join = auth_socket.run_async(auth_server);
 
     let lobby_server = Arc::new(LobbyServer::new());
-    lobby_socket.run(lobby_server).unwrap();
+    let lobby_join = lobby_socket.run_async(lobby_server);
+
+    auth_join.join().unwrap().unwrap();
+    lobby_join.join().unwrap().unwrap();
 }
