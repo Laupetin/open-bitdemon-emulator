@@ -5,14 +5,12 @@ use crate::auth_handler::{AuthHandler, AuthMessageType};
 use crate::response::auth_response::AuthResponse;
 use crate::result::auth_proof::ClientOpaqueAuthProof;
 use crate::result::auth_ticket::{AuthTicket, BdAuthTicketType};
-use bitdemon::crypto::{generate_iv_from_seed, generate_iv_seed};
+use bitdemon::crypto::{encrypt_buffer_in_place, generate_iv_from_seed, generate_iv_seed};
 use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::messaging::bd_serialization::{BdDeserialize, BdSerialize};
 use bitdemon::messaging::bd_writer::BdWriter;
 use bitdemon::messaging::{BdErrorCode, StreamMode};
 use bitdemon::networking::bd_session::BdSession;
-use cbc::cipher::block_padding::ZeroPadding;
-use cbc::cipher::{BlockEncryptMut, KeyIvInit};
 use chrono::Utc;
 use des::cipher::BlockSizeUser;
 use log::info;
@@ -26,9 +24,6 @@ struct SteamAuthResponse {
     ticket: AuthTicket,
     proof: ClientOpaqueAuthProof,
 }
-
-type TdesCbcEnc = cbc::Encryptor<des::TdesEde3>;
-type TdesCbcDec = cbc::Decryptor<des::TdesEde3>;
 
 impl AuthResponse for SteamAuthResponse {
     fn message_type(&self) -> AuthMessageType {
@@ -56,10 +51,8 @@ impl AuthResponse for SteamAuthResponse {
             0,
         );
 
-        let encrypted = TdesCbcEnc::new(&self.ticket.session_key.into(), &iv.into())
-            .encrypt_padded_mut::<ZeroPadding>(&mut ticket_buf, ticket_buf_len)
-            .unwrap();
-        writer.write_bytes(encrypted)?;
+        encrypt_buffer_in_place(&mut ticket_buf, &self.ticket.session_key, &iv);
+        writer.write_bytes(ticket_buf.as_slice())?;
 
         let proof_data = self.proof.serialize();
         writer.write_bytes(&proof_data)?;

@@ -90,7 +90,6 @@ dependencies = [
  "num-derive",
  "num-traits",
  "snafu",
- "tiger",
 ]
 
 [[package]]
@@ -346,6 +345,8 @@ name = "libbitdemon"
 version = "0.1.0"
 dependencies = [
  "byteorder",
+ "cbc",
+ "des",
  "log",
  "num-derive",
  "num-traits",

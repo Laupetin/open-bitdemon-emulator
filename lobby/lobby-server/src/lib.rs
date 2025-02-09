@@ -184,8 +184,7 @@ pub struct LobbyServer {
 
 impl LobbyServer {
     pub fn new() -> Self {
-        let mut handlers: HashMap<LobbyServiceId, Arc<dyn LobbyHandler + Sync + Send>> =
-            HashMap::new();
+        let handlers: HashMap<LobbyServiceId, Arc<dyn LobbyHandler + Sync + Send>> = HashMap::new();
 
         // handlers.insert(
         //     AuthMessageType::SteamForMmpRequest,

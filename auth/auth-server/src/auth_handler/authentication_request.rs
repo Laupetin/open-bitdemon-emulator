@@ -12,10 +12,6 @@ pub struct AuthenticationRequest {
     pub request_data: SteamAuthenticationRequest,
 }
 
-pub enum AuthenticationRequestData {
-    Steam { request: SteamAuthenticationRequest },
-}
-
 #[derive(Debug, Snafu)]
 enum AuthenticationRequestDeserializationError {
     #[snafu(display("The title id is unknown (value={title_id})"))]
