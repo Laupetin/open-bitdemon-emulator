@@ -14,9 +14,11 @@ use std::{io, thread};
 const MAX_MESSAGE_SIZE: u32 = 0x4000000;
 
 #[derive(Debug, Snafu)]
-#[snafu(display("Message was too large (size={msg_size}, max={MAX_MESSAGE_SIZE})"))]
-struct MessageTooLargeError {
-    msg_size: u32,
+enum BdSocketError {
+    #[snafu(display("Message was too large (size={msg_size}, max={MAX_MESSAGE_SIZE})"))]
+    MessageTooLargeError { msg_size: u32 },
+    #[snafu(display("The client sent an incomplete message header"))]
+    IncompleteMessageHeaderError {},
 }
 
 pub trait BdMessageHandler {
@@ -85,7 +87,14 @@ impl BdSocket {
     fn handle_connection(session: &mut BdSession, message_handler: &dyn BdMessageHandler) {
         let connection_loop = |session: &mut BdSession| -> Result<(), Box<dyn Error>> {
             loop {
-                let header = session.read_u32::<LittleEndian>()?;
+                let mut b: [u8; 4] = [0; 4];
+                let len = session.read(&mut b)?;
+                if len == 0 {
+                    return Ok(());
+                }
+
+                ensure!(len == 4, IncompleteMessageHeaderSnafu {});
+                let header = u32::from_le_bytes(b);
 
                 match header {
                     0 => {
