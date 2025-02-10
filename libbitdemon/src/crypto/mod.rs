@@ -1,12 +1,14 @@
-use cbc::cipher::BlockEncryptMut;
-use des::cipher::block_padding::ZeroPadding;
+use cbc::cipher::{BlockDecryptMut, BlockEncryptMut};
+use des::cipher::block_padding::{UnpadError, ZeroPadding};
 use des::cipher::BlockSizeUser;
 use des::cipher::KeyIvInit;
 use rand::RngCore;
+use snafu::Snafu;
+use std::error::Error;
 use tiger::{Digest, Tiger};
 
 type TdesCbcEnc = cbc::Encryptor<des::TdesEde3>;
-// type TdesCbcDec = cbc::Decryptor<des::TdesEde3>;
+type TdesCbcDec = cbc::Decryptor<des::TdesEde3>;
 
 pub fn generate_iv_seed() -> u32 {
     rand::rng().next_u32()
@@ -31,6 +33,21 @@ pub fn encrypt_buffer_in_place(buf: &mut Vec<u8>, key: &[u8; 24], iv: &[u8; 8]) 
         .unwrap();
 
     debug_assert_eq!(encrypted.len(), buf.len());
+}
+
+#[derive(Debug, Snafu)]
+#[snafu(display("Decryption failed due to wrong padding in the decryption buffer"))]
+struct DecryptionError {}
+
+pub fn decrypt_buffer_in_place(
+    buf: &mut [u8],
+    key: &[u8; 24],
+    iv: &[u8; 8],
+) -> Result<(), Box<dyn Error>> {
+    TdesCbcDec::new(key.into(), iv.into())
+        .decrypt_padded_mut::<ZeroPadding>(buf)
+        .map(|_| ())
+        .map_err(|_| DecryptionSnafu {}.build().into())
 }
 
 #[cfg(test)]
