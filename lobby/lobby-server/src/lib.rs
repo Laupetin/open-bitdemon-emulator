@@ -228,7 +228,7 @@ impl BdMessageHandler for LobbyServer {
         match maybe_handler {
             Some(handler) => {
                 message.reader.set_type_checked(true);
-                let response = handler.handle_message(session, message)?;
+                let mut response = handler.handle_message(session, message)?;
                 response.send(session)?;
 
                 Ok(())

@@ -1,4 +1,5 @@
-﻿use crate::networking::bd_session::BdSession;
+﻿use crate::crypto::{encrypt_buffer_in_place, generate_iv_from_seed, generate_iv_seed};
+use crate::networking::bd_session::BdSession;
 use byteorder::{LittleEndian, WriteBytesExt};
 use snafu::{ensure, Snafu};
 use std::error::Error;
@@ -19,6 +20,8 @@ enum BdResponseError {
     NoSessionKeyAvailableError,
 }
 
+const RESPONSE_SIGNATURE: u32 = 0xDEADBEEF;
+
 impl BdResponse {
     pub fn unencrypted(data: Vec<u8>) -> Self {
         BdResponse {
@@ -33,10 +36,24 @@ impl BdResponse {
         }
     }
 
-    pub fn send(&self, session: &mut BdSession) -> Result<(), Box<dyn Error>> {
+    pub fn send(&mut self, session: &mut BdSession) -> Result<(), Box<dyn Error>> {
         if self.should_encrypt && session.session_key.is_some() {
             ensure!(session.session_key.is_some(), NoSessionKeyAvailableSnafu {});
-            todo!();
+
+            let seed = generate_iv_seed();
+            let iv = generate_iv_from_seed(seed);
+
+            self.data
+                .splice(0..0, RESPONSE_SIGNATURE.to_le_bytes().iter().cloned());
+            encrypt_buffer_in_place(&mut self.data, session.session_key.as_ref().unwrap(), &iv);
+
+            // Written length minus length field itself
+            // 1 byte (encrypted) + 4 byte (seed)
+            let message_length = self.data.len() + 5;
+            session.write_u32::<LittleEndian>(message_length as u32)?;
+            session.write_u8(1u8)?; // Encrypted
+            session.write_u32::<LittleEndian>(seed)?;
+            session.write(self.data.as_slice())?;
         } else {
             // Written length minus length field itself
             let message_length = self.data.len() + 1;
