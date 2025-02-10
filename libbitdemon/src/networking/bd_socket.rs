@@ -2,7 +2,7 @@ use crate::messaging::bd_message::BdMessage;
 use crate::networking::bd_session::BdSession;
 use crate::networking::session_manager::SessionManager;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use log::{error, info};
+use log::{debug, error, info};
 use snafu::{ensure, Snafu};
 use std::error::Error;
 use std::io::{ErrorKind, Read};
@@ -98,12 +98,12 @@ impl BdSocket {
 
                 match header {
                     0 => {
-                        info!("[Session {}] Ping", session.id);
+                        debug!("[Session {}] Ping", session.id);
                         session.write_u32::<LittleEndian>(0)?;
                     }
                     200 => {
                         let available_buffer_size = session.read_u32::<LittleEndian>()?;
-                        info!(
+                        debug!(
                             "[Session {}] Buffer available: {available_buffer_size}",
                             session.id
                         );
@@ -114,7 +114,7 @@ impl BdSocket {
                             MessageTooLargeSnafu { msg_size: header }
                         );
 
-                        info!("[Session {}] Message with size {header}", session.id);
+                        debug!("[Session {}] Message with size {header}", session.id);
                         let mut msg = vec![0; header as usize];
                         session.read(msg.as_mut_slice())?;
                         let message = BdMessage::new(&session, msg)?;
