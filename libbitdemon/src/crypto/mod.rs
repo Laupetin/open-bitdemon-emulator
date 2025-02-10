@@ -1,11 +1,17 @@
+use cbc::cipher::KeyInit;
 use cbc::cipher::{BlockDecryptMut, BlockEncryptMut};
-use des::cipher::block_padding::{UnpadError, ZeroPadding};
+use des::cipher::block_padding::ZeroPadding;
 use des::cipher::BlockSizeUser;
 use des::cipher::KeyIvInit;
+use hmac::digest::core_api::CoreWrapper;
+use hmac::{Hmac, HmacCore, Mac};
 use rand::RngCore;
+use sha1::Sha1;
+use sha1::{Digest as Sha1Digest, Sha1Core};
 use snafu::Snafu;
 use std::error::Error;
-use tiger::{Digest, Tiger};
+use tiger::Digest as TigerDigest;
+use tiger::Tiger;
 
 type TdesCbcEnc = cbc::Encryptor<des::TdesEde3>;
 type TdesCbcDec = cbc::Decryptor<des::TdesEde3>;
@@ -16,7 +22,7 @@ pub fn generate_iv_seed() -> u32 {
 
 pub fn generate_iv_from_seed(seed: u32) -> [u8; 8] {
     let mut tiger = Tiger::new();
-    tiger.update(seed.to_le_bytes());
+    TigerDigest::update(&mut tiger, seed.to_le_bytes());
     let a: [u8; 24] = tiger.finalize().into();
     let mut b: [u8; 8] = [0; 8];
     b.copy_from_slice(&a[0..8]);
@@ -48,6 +54,17 @@ pub fn decrypt_buffer_in_place(
         .decrypt_padded_mut::<ZeroPadding>(buf)
         .map(|_| ())
         .map_err(|_| DecryptionSnafu {}.build().into())
+}
+
+type HmacSha1 = Hmac<Sha1>;
+
+pub fn calculate_hmac(buf: &[u8], key: &[u8; 24]) -> u32 {
+    let mut hmac = <CoreWrapper<HmacCore<CoreWrapper<Sha1Core>>> as KeyInit>::new_from_slice(key)
+        .expect("HMac accepts session key");
+    Mac::update(&mut hmac, buf);
+    let result = HmacSha1::finalize(hmac);
+
+    u32::from_le_bytes((&result.into_bytes()[0..4]).try_into().unwrap())
 }
 
 #[cfg(test)]

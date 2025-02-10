@@ -1,4 +1,4 @@
-use crate::crypto::{decrypt_buffer_in_place, encrypt_buffer_in_place, generate_iv_from_seed};
+use crate::crypto::{calculate_hmac, decrypt_buffer_in_place, generate_iv_from_seed};
 use crate::messaging::bd_reader::BdReader;
 use crate::networking::bd_session::BdSession;
 use snafu::{ensure, Snafu};
@@ -12,6 +12,8 @@ pub struct BdMessage {
 enum BdMessageError {
     #[snafu(display("Received encrypted message but no session key was set"))]
     NoSessionKeyError,
+    #[snafu(display("Message Hmac mismatch, expected={expected} actual={actual}"))]
+    InvalidHmacError { expected: u32, actual: u32 },
 }
 
 impl BdMessage {
@@ -29,8 +31,19 @@ impl BdMessage {
                 &iv,
             )?;
 
-            // TODO: Check hmac
-            let _hmac = u32::from_le_bytes(buf[5..9].try_into().unwrap());
+            let hmac = u32::from_le_bytes(buf[5..9].try_into().unwrap());
+
+            // Hmac does not include the message type byte that follows so skip that.
+            let expected_hmac =
+                calculate_hmac(&buf[10..buf.len()], session.session_key.as_ref().unwrap());
+
+            ensure!(
+                hmac == expected_hmac,
+                InvalidHmacSnafu {
+                    expected: expected_hmac,
+                    actual: hmac
+                }
+            );
 
             Ok(BdMessage {
                 reader: BdReader::new(Vec::from(&buf[9..buf.len()])),

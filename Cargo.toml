@@ -31,7 +31,7 @@ members = [
     "lobby/service-twitter",
     "lobby/service-vote-rank",
     "lobby/service-youtube"
-, "dw-server"]
+    , "dw-server"]
 resolver = "1"
 
 [workspace.dependencies]
@@ -40,9 +40,11 @@ cbc = "0.1.2"
 chrono = "0.4.39"
 des = "0.8.1"
 env_logger = "0.11.6"
+hmac = "0.12.1"
 log = "0.4.25"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
 rand = "0.9.0"
+sha1 = "0.10.6"
 snafu = "0.8.5"
 tiger = "0.2.1"
