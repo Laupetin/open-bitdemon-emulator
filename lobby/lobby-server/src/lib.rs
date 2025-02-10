@@ -2,8 +2,9 @@
 mod service;
 
 use crate::response::task_reply::TaskReply;
+use crate::service::anti_cheat::AntiCheatHandler;
 use crate::service::lobby::LobbyServiceHandler;
-use crate::LobbyServiceId::LobbyService;
+use crate::LobbyServiceId::{Anticheat, LobbyService};
 use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::messaging::bd_response::{BdResponse, ResponseCreator};
 use bitdemon::messaging::BdErrorCode::ServiceNotAvailable;
@@ -197,6 +198,7 @@ impl LobbyServer {
             HashMap::new();
 
         handlers.insert(LobbyService, Arc::new(LobbyServiceHandler::new()));
+        handlers.insert(Anticheat, Arc::new(AntiCheatHandler::new()));
 
         LobbyServer {
             lobby_handlers: RwLock::new(handlers),
