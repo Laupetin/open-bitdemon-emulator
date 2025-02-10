@@ -3,8 +3,9 @@ mod service;
 
 use crate::response::task_reply::TaskReply;
 use crate::service::anti_cheat::AntiCheatHandler;
+use crate::service::bandwidth::BandwidthHandler;
 use crate::service::lobby::LobbyServiceHandler;
-use crate::LobbyServiceId::{Anticheat, LobbyService};
+use crate::LobbyServiceId::{Anticheat, BandwidthTest, LobbyService};
 use bitdemon::messaging::bd_message::BdMessage;
 use bitdemon::messaging::bd_response::{BdResponse, ResponseCreator};
 use bitdemon::messaging::BdErrorCode::ServiceNotAvailable;
@@ -199,6 +200,7 @@ impl LobbyServer {
 
         handlers.insert(LobbyService, Arc::new(LobbyServiceHandler::new()));
         handlers.insert(Anticheat, Arc::new(AntiCheatHandler::new()));
+        handlers.insert(BandwidthTest, Arc::new(BandwidthHandler::new()));
 
         LobbyServer {
             lobby_handlers: RwLock::new(handlers),
