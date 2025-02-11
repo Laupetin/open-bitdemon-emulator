@@ -1,4 +1,4 @@
-use bitdemon::auth::AuthServer;
+use bitdemon::auth::auth_server::AuthServer;
 use bitdemon::lobby::LobbyServer;
 use bitdemon::networking::bd_socket::BdSocket;
 use log::LevelFilter;

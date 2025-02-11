@@ -1,4 +1,5 @@
 ﻿use crate::auth::auth_proof::ClientOpaqueAuthProof;
+use crate::auth::authentication::SessionAuthentication;
 use crate::domain::title::Title;
 use crate::lobby::response::lsg_reply::ConnectionIdResponse;
 use crate::lobby::LobbyHandler;
@@ -42,13 +43,19 @@ impl LobbyHandler for LobbyServiceHandler {
         message.reader.read_bytes(&mut auth_proof)?;
 
         let auth_proof = ClientOpaqueAuthProof::deserialize(&auth_proof)?;
-        session.session_key = Some(auth_proof.session_key);
 
         // TODO: Check titleId, expires
         info!(
             "[Session {}] Authenticated with opaque data user_id={} username={}",
             session.id, auth_proof.user_id, auth_proof.username
         );
+
+        session.authentication = Some(SessionAuthentication {
+            user_id: auth_proof.user_id,
+            username: auth_proof.username,
+            session_key: auth_proof.session_key,
+            title: auth_proof.title,
+        });
 
         Ok(ConnectionIdResponse::new(session.id).to_response()?)
     }

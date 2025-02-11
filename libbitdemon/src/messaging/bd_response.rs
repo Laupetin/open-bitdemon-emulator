@@ -1,7 +1,6 @@
 ﻿use crate::crypto::{encrypt_buffer_in_place, generate_iv_from_seed, generate_iv_seed};
 use crate::networking::bd_session::BdSession;
 use byteorder::{LittleEndian, WriteBytesExt};
-use snafu::{ensure, Snafu};
 use std::error::Error;
 use std::io::Write;
 
@@ -12,12 +11,6 @@ pub struct BdResponse {
 
 pub trait ResponseCreator {
     fn to_response(&self) -> Result<BdResponse, Box<dyn Error>>;
-}
-
-#[derive(Debug, Snafu)]
-enum BdResponseError {
-    #[snafu(display("Tried to send encrypted response but no session key is available"))]
-    NoSessionKeyAvailableError,
 }
 
 const RESPONSE_SIGNATURE: u32 = 0xDEADBEEF;
@@ -37,15 +30,17 @@ impl BdResponse {
     }
 
     pub fn send(&mut self, session: &mut BdSession) -> Result<(), Box<dyn Error>> {
-        if self.should_encrypt && session.session_key.is_some() {
-            ensure!(session.session_key.is_some(), NoSessionKeyAvailableSnafu {});
-
+        if self.should_encrypt && session.authentication.is_some() {
             let seed = generate_iv_seed();
             let iv = generate_iv_from_seed(seed);
 
             self.data
                 .splice(0..0, RESPONSE_SIGNATURE.to_le_bytes().iter().cloned());
-            encrypt_buffer_in_place(&mut self.data, session.session_key.as_ref().unwrap(), &iv);
+            encrypt_buffer_in_place(
+                &mut self.data,
+                &session.authentication.as_ref().unwrap().session_key,
+                &iv,
+            );
 
             // Written length minus length field itself
             // 1 byte (encrypted) + 4 byte (seed)

@@ -1,3 +1,4 @@
+use crate::auth::authentication::SessionAuthentication;
 use std::io;
 use std::io::BufReader;
 use std::net::{SocketAddr, TcpStream};
@@ -6,8 +7,8 @@ pub type SessionId = u64;
 
 pub struct BdSession {
     pub id: SessionId,
+    pub authentication: Option<SessionAuthentication>,
     stream: BufReader<TcpStream>,
-    pub session_key: Option<[u8; 24]>,
 }
 
 impl io::Read for BdSession {
@@ -32,8 +33,8 @@ impl BdSession {
 
         BdSession {
             id: 0,
+            authentication: None,
             stream: reader,
-            session_key: None,
         }
     }
 
