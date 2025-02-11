@@ -10,7 +10,7 @@ use crate::messaging::StreamMode::BitMode;
 use crate::networking::bd_session::BdSession;
 use log::info;
 use num_traits::FromPrimitive;
-use snafu::{OptionExt, Snafu};
+use snafu::{ensure, OptionExt, Snafu};
 use std::error::Error;
 use std::sync::Arc;
 
@@ -28,6 +28,13 @@ impl LobbyServiceHandler {
 enum LobbyServiceError {
     #[snafu(display("The title id is unknown (value={title_id})"))]
     UnknownTitleError { title_id: u32 },
+    #[snafu(display("The specified title id does not match (specified_title={specified_title:?} authenticated_title={authenticated_title:?})"))]
+    InvalidTitleError {
+        specified_title: Title,
+        authenticated_title: Title,
+    },
+    #[snafu(display("The authentication expired (expires={expires} now={now})"))]
+    AuthenticationExpiredError { expires: i64, now: i64 },
 }
 
 impl LobbyHandler for LobbyServiceHandler {
@@ -40,7 +47,7 @@ impl LobbyHandler for LobbyServiceHandler {
         message.reader.read_type_checked_bit()?;
 
         let title_id = message.reader.read_u32()?;
-        let _title = Title::from_u32(title_id).with_context(|| UnknownTitleSnafu { title_id })?;
+        let title = Title::from_u32(title_id).with_context(|| UnknownTitleSnafu { title_id })?;
         let _iv_seed = message.reader.read_u32()?;
 
         let mut auth_proof: [u8; 128] = [0; 128];
@@ -49,7 +56,23 @@ impl LobbyHandler for LobbyServiceHandler {
         let auth_proof =
             ClientOpaqueAuthProof::deserialize(&mut auth_proof, self.key_store.as_ref())?;
 
-        // TODO: Check titleId, expires
+        let now = chrono::Utc::now().timestamp();
+        ensure!(
+            auth_proof.time_expires >= now,
+            AuthenticationExpiredSnafu {
+                expires: auth_proof.time_expires,
+                now
+            }
+        );
+
+        ensure!(
+            auth_proof.title == title,
+            InvalidTitleSnafu {
+                specified_title: title,
+                authenticated_title: auth_proof.title
+            }
+        );
+
         info!(
             "[Session {}] Authenticated with opaque data user_id={} username={}",
             session.id, auth_proof.user_id, auth_proof.username
