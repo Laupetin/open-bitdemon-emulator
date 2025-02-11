@@ -1,5 +1,6 @@
 use crate::auth::auth_handler::steam::SteamAuthHandler;
-use crate::auth::auth_handler::{AuthHandler, AuthMessageType};
+use crate::auth::auth_handler::AuthMessageType;
+use crate::auth::auth_handler::ThreadSafeAuthHandler;
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::auth::response::{AuthResponse, AuthResponseWithOnlyCode};
 use crate::messaging::bd_message::BdMessage;
@@ -7,7 +8,7 @@ use crate::messaging::bd_response::ResponseCreator;
 use crate::messaging::BdErrorCode::AuthIllegalOperation;
 use crate::networking::bd_session::BdSession;
 use crate::networking::bd_socket::BdMessageHandler;
-use log::warn;
+use log::{info, warn};
 use num_traits::FromPrimitive;
 use snafu::Snafu;
 use std::collections::HashMap;
@@ -15,22 +16,29 @@ use std::error::Error;
 use std::sync::{Arc, RwLock};
 
 pub struct AuthServer {
-    auth_handlers: RwLock<HashMap<AuthMessageType, Arc<dyn AuthHandler + Sync + Send>>>,
+    auth_handlers: RwLock<HashMap<AuthMessageType, Arc<ThreadSafeAuthHandler>>>,
 }
 
 impl AuthServer {
     pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> Self {
-        let mut handlers: HashMap<AuthMessageType, Arc<dyn AuthHandler + Sync + Send>> =
-            HashMap::new();
+        let auth_server = AuthServer {
+            auth_handlers: RwLock::new(HashMap::new()),
+        };
 
-        handlers.insert(
+        auth_server.add_handler(
             AuthMessageType::SteamForMmpRequest,
             Arc::new(SteamAuthHandler::new(key_store)),
         );
 
-        AuthServer {
-            auth_handlers: RwLock::new(handlers),
-        }
+        auth_server
+    }
+
+    pub fn add_handler(&self, message_type: AuthMessageType, handler: Arc<ThreadSafeAuthHandler>) {
+        info!("Adding {message_type:?} auth service");
+        self.auth_handlers
+            .write()
+            .unwrap()
+            .insert(message_type, handler);
     }
 }
 

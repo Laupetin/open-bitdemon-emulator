@@ -63,6 +63,8 @@ impl AuthMessageType {
     }
 }
 
+pub type ThreadSafeAuthHandler = dyn AuthHandler + Sync + Send;
+
 pub trait AuthHandler {
     fn handle_message(
         &self,

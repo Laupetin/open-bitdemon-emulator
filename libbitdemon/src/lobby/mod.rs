@@ -1,18 +1,16 @@
 mod response;
-mod service;
+pub mod service;
 
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::lobby::response::task_reply::TaskReply;
-use crate::lobby::service::anti_cheat::AntiCheatHandler;
-use crate::lobby::service::bandwidth::BandwidthHandler;
 use crate::lobby::service::lobby::LobbyServiceHandler;
-use crate::lobby::LobbyServiceId::{Anticheat, BandwidthTest, LobbyService};
+use crate::lobby::LobbyServiceId::LobbyService;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
 use crate::messaging::BdErrorCode::ServiceNotAvailable;
 use crate::networking::bd_session::BdSession;
 use crate::networking::bd_socket::BdMessageHandler;
-use log::warn;
+use log::{info, warn};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 use snafu::Snafu;
@@ -182,6 +180,8 @@ pub enum LobbyServiceId {
     // - SwitchContextData
 }
 
+pub type ThreadSafeLobbyHandler = dyn LobbyHandler + Sync + Send;
+
 pub trait LobbyHandler {
     fn handle_message(
         &self,
@@ -191,21 +191,26 @@ pub trait LobbyHandler {
 }
 
 pub struct LobbyServer {
-    lobby_handlers: RwLock<HashMap<LobbyServiceId, Arc<dyn LobbyHandler + Sync + Send>>>,
+    lobby_handlers: RwLock<HashMap<LobbyServiceId, Arc<ThreadSafeLobbyHandler>>>,
 }
 
 impl LobbyServer {
     pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> Self {
-        let mut handlers: HashMap<LobbyServiceId, Arc<dyn LobbyHandler + Sync + Send>> =
-            HashMap::new();
+        let lobby_server = LobbyServer {
+            lobby_handlers: RwLock::new(HashMap::new()),
+        };
 
-        handlers.insert(LobbyService, Arc::new(LobbyServiceHandler::new(key_store)));
-        handlers.insert(Anticheat, Arc::new(AntiCheatHandler::new()));
-        handlers.insert(BandwidthTest, Arc::new(BandwidthHandler::new()));
+        lobby_server.add_service(LobbyService, Arc::new(LobbyServiceHandler::new(key_store)));
 
-        LobbyServer {
-            lobby_handlers: RwLock::new(handlers),
-        }
+        lobby_server
+    }
+
+    pub fn add_service(&self, service_id: LobbyServiceId, handler: Arc<ThreadSafeLobbyHandler>) {
+        info!("Adding {service_id:?} lobby service");
+        self.lobby_handlers
+            .write()
+            .unwrap()
+            .insert(service_id, handler);
     }
 }
 

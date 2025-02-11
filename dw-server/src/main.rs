@@ -1,3 +1,6 @@
+mod lobby;
+
+use crate::lobby::configure_lobby_server;
 use bitdemon::auth::auth_server::AuthServer;
 use bitdemon::auth::key_store::InMemoryKeyStore;
 use bitdemon::lobby::LobbyServer;
@@ -28,9 +31,11 @@ fn main() {
     let key_store = Arc::new(InMemoryKeyStore::new());
 
     let auth_server = Arc::new(AuthServer::new(key_store.clone()));
-    let auth_join = auth_socket.run_async(auth_server);
-
     let lobby_server = Arc::new(LobbyServer::new(key_store.clone()));
+
+    configure_lobby_server(&lobby_server);
+
+    let auth_join = auth_socket.run_async(auth_server);
     let lobby_join = lobby_socket.run_async(lobby_server);
 
     auth_join.join().unwrap().unwrap();
