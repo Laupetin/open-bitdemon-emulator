@@ -1,5 +1,6 @@
 ﻿use crate::auth::auth_proof::ClientOpaqueAuthProof;
 use crate::auth::authentication::SessionAuthentication;
+use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::domain::title::Title;
 use crate::lobby::response::lsg_reply::ConnectionIdResponse;
 use crate::lobby::LobbyHandler;
@@ -11,12 +12,15 @@ use log::info;
 use num_traits::FromPrimitive;
 use snafu::{OptionExt, Snafu};
 use std::error::Error;
+use std::sync::Arc;
 
-pub struct LobbyServiceHandler {}
+pub struct LobbyServiceHandler {
+    key_store: Arc<ThreadSafeBackendPrivateKeyStorage>,
+}
 
 impl LobbyServiceHandler {
-    pub fn new() -> LobbyServiceHandler {
-        LobbyServiceHandler {}
+    pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> LobbyServiceHandler {
+        LobbyServiceHandler { key_store }
     }
 }
 
@@ -42,7 +46,8 @@ impl LobbyHandler for LobbyServiceHandler {
         let mut auth_proof: [u8; 128] = [0; 128];
         message.reader.read_bytes(&mut auth_proof)?;
 
-        let auth_proof = ClientOpaqueAuthProof::deserialize(&auth_proof)?;
+        let auth_proof =
+            ClientOpaqueAuthProof::deserialize(&mut auth_proof, self.key_store.as_ref())?;
 
         // TODO: Check titleId, expires
         info!(

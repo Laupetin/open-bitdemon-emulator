@@ -1,4 +1,5 @@
-﻿use crate::domain::title::Title;
+﻿use crate::auth::key_store::BackendPrivateKeyStorage;
+use crate::domain::title::Title;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use num_traits::{FromPrimitive, ToPrimitive};
 use snafu::{ensure, Snafu};
@@ -19,25 +20,22 @@ pub struct ClientOpaqueAuthProof {
     pub username: String,
 }
 
-const MAGIC: u32 = 0xBEBEABAB;
+const MAGIC: u64 = 0xC0FFEEFFEEAA1337;
 
 #[derive(Debug, Snafu)]
 enum AuthProofError {
-    #[snafu(display("The magic value for AuthProof is wrong (value={value} expected={MAGIC})"))]
-    InvalidMagicError { value: u32 },
     #[snafu(display("The title id is unknown (value={title_id})"))]
     UnknownTitleError { title_id: u32 },
+    #[snafu(display("Key for opaque auth data could not be identified"))]
+    UnknownKeyError {},
 }
 
 impl ClientOpaqueAuthProof {
-    pub fn serialize(&self) -> [u8; 128] {
-        // TODO: This must be encrypted
-
+    pub fn serialize(&self, key_store: &dyn BackendPrivateKeyStorage) -> [u8; 128] {
         let mut vec = Vec::new();
         let mut cursor = Cursor::new(&mut vec);
 
-        cursor.write_u32::<LittleEndian>(MAGIC).unwrap();
-        cursor.write_u32::<LittleEndian>(1).unwrap(); // keyId
+        cursor.write_u64::<LittleEndian>(MAGIC).unwrap();
 
         cursor
             .write_u32::<LittleEndian>(self.title.to_u32().unwrap())
@@ -57,16 +55,40 @@ impl ClientOpaqueAuthProof {
         cursor.write_u32::<LittleEndian>(0).unwrap();
 
         debug_assert_eq!(vec.len(), 128usize);
+
+        key_store
+            .get_current_key()
+            .encrypt_data(vec.as_mut_slice())
+            .expect("Should be able to encrypt opaque data");
+
         vec.try_into().unwrap()
     }
 
-    pub fn deserialize(buf: &[u8; 128]) -> Result<Self, Box<dyn Error>> {
-        let mut cursor = Cursor::new(buf);
+    pub fn deserialize(
+        buf: &mut [u8; 128],
+        key_store: &dyn BackendPrivateKeyStorage,
+    ) -> Result<Self, Box<dyn Error>> {
+        let mut last_buf: [u8; 128] = [0; 128];
 
-        let magic = cursor.read_u32::<LittleEndian>()?;
-        ensure!(magic == MAGIC, InvalidMagicSnafu { value: magic });
+        let decryption_successful = key_store
+            .get_valid_keys()
+            .iter()
+            .find(|key| {
+                last_buf = *buf;
+                key.decrypt_data(&mut last_buf)
+                    .expect("Should be able to decrypt opaque data");
 
-        let _key_id = cursor.read_u32::<LittleEndian>()?;
+                let magic = u64::from_le_bytes((&last_buf[0..8]).try_into().unwrap());
+                magic == MAGIC
+            })
+            .is_some();
+
+        ensure!(decryption_successful, UnknownKeySnafu {});
+
+        let mut cursor = Cursor::new(last_buf);
+
+        // Skip magic
+        cursor.set_position(8);
 
         let title_id = cursor.read_u32::<LittleEndian>()?;
         let title =

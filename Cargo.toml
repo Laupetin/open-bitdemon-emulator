@@ -6,6 +6,7 @@ members = [
 resolver = "1"
 
 [workspace.dependencies]
+aes = "0.8.4"
 byteorder = "1.5.0"
 cbc = "0.1.2"
 chrono = "0.4.39"

@@ -1,6 +1,7 @@
 mod response;
 mod service;
 
+use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::lobby::response::task_reply::TaskReply;
 use crate::lobby::service::anti_cheat::AntiCheatHandler;
 use crate::lobby::service::bandwidth::BandwidthHandler;
@@ -194,11 +195,11 @@ pub struct LobbyServer {
 }
 
 impl LobbyServer {
-    pub fn new() -> Self {
+    pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> Self {
         let mut handlers: HashMap<LobbyServiceId, Arc<dyn LobbyHandler + Sync + Send>> =
             HashMap::new();
 
-        handlers.insert(LobbyService, Arc::new(LobbyServiceHandler::new()));
+        handlers.insert(LobbyService, Arc::new(LobbyServiceHandler::new(key_store)));
         handlers.insert(Anticheat, Arc::new(AntiCheatHandler::new()));
         handlers.insert(BandwidthTest, Arc::new(BandwidthHandler::new()));
 

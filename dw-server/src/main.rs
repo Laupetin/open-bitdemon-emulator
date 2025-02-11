@@ -1,4 +1,5 @@
 use bitdemon::auth::auth_server::AuthServer;
+use bitdemon::auth::key_store::InMemoryKeyStore;
 use bitdemon::lobby::LobbyServer;
 use bitdemon::networking::bd_socket::BdSocket;
 use log::LevelFilter;
@@ -24,10 +25,12 @@ fn main() {
         Ok(s) => s,
     };
 
-    let auth_server = Arc::new(AuthServer::new());
+    let key_store = Arc::new(InMemoryKeyStore::new());
+
+    let auth_server = Arc::new(AuthServer::new(key_store.clone()));
     let auth_join = auth_socket.run_async(auth_server);
 
-    let lobby_server = Arc::new(LobbyServer::new());
+    let lobby_server = Arc::new(LobbyServer::new(key_store.clone()));
     let lobby_join = lobby_socket.run_async(lobby_server);
 
     auth_join.join().unwrap().unwrap();

@@ -1,5 +1,6 @@
 use crate::auth::auth_handler::steam::SteamAuthHandler;
 use crate::auth::auth_handler::{AuthHandler, AuthMessageType};
+use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::auth::response::{AuthResponse, AuthResponseWithOnlyCode};
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::ResponseCreator;
@@ -18,13 +19,13 @@ pub struct AuthServer {
 }
 
 impl AuthServer {
-    pub fn new() -> Self {
+    pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> Self {
         let mut handlers: HashMap<AuthMessageType, Arc<dyn AuthHandler + Sync + Send>> =
             HashMap::new();
 
         handlers.insert(
             AuthMessageType::SteamForMmpRequest,
-            Arc::new(SteamAuthHandler::new()),
+            Arc::new(SteamAuthHandler::new(key_store)),
         );
 
         AuthServer {

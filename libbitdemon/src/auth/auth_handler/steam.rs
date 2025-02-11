@@ -3,6 +3,7 @@
 };
 use crate::auth::auth_handler::{AuthHandler, AuthMessageType};
 use crate::auth::auth_proof::ClientOpaqueAuthProof;
+use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::auth::response::AuthResponse;
 use crate::auth::result::auth_ticket::{AuthTicket, BdAuthTicketType};
 use crate::crypto::{encrypt_buffer_in_place, generate_iv_from_seed, generate_iv_seed};
@@ -15,14 +16,17 @@ use chrono::Utc;
 use des::cipher::BlockSizeUser;
 use log::info;
 use std::error::Error;
+use std::sync::Arc;
 
-pub struct SteamAuthHandler {}
+pub struct SteamAuthHandler {
+    key_store: Arc<ThreadSafeBackendPrivateKeyStorage>,
+}
 
 const TICKET_ISSUE_LENGTH: i64 = 5 * 60 * 1000;
 
 struct SteamAuthResponse {
     ticket: AuthTicket,
-    proof: ClientOpaqueAuthProof,
+    serialized_proof_data: [u8; 128],
 }
 
 impl AuthResponse for SteamAuthResponse {
@@ -54,16 +58,15 @@ impl AuthResponse for SteamAuthResponse {
         encrypt_buffer_in_place(&mut ticket_buf, &self.ticket.session_key, &iv);
         writer.write_bytes(ticket_buf.as_slice())?;
 
-        let proof_data = self.proof.serialize();
-        writer.write_bytes(&proof_data)?;
+        writer.write_bytes(&self.serialized_proof_data)?;
 
         Ok(())
     }
 }
 
 impl SteamAuthHandler {
-    pub fn new() -> Self {
-        SteamAuthHandler {}
+    pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> Self {
+        SteamAuthHandler { key_store }
     }
 }
 
@@ -110,7 +113,11 @@ impl AuthHandler for SteamAuthHandler {
             session_key: ticket.session_key,
             username: String::from(&ticket.username),
         };
+        let serialized_proof_data = proof.serialize(self.key_store.as_ref());
 
-        Ok(Box::new(SteamAuthResponse { ticket, proof }))
+        Ok(Box::new(SteamAuthResponse {
+            ticket,
+            serialized_proof_data,
+        }))
     }
 }
