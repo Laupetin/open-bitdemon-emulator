@@ -15,12 +15,28 @@ pub struct TaskReply {
 }
 
 impl TaskReply {
-    pub fn with_only_error_code(error_code: BdErrorCode) -> TaskReply {
+    pub fn with_only_error_code<T: ToPrimitive>(
+        error_code: BdErrorCode,
+        operation_id: T,
+    ) -> TaskReply {
         TaskReply {
             transaction_id: 0u64,
             error_code,
-            operation_id: 0u8,
+            operation_id: operation_id.to_u8().unwrap(),
             results: Vec::new(),
+            total_num_results: None,
+        }
+    }
+
+    pub fn with_results<T: ToPrimitive>(
+        operation_id: T,
+        results: Vec<Box<dyn BdSerialize>>,
+    ) -> TaskReply {
+        TaskReply {
+            transaction_id: 0u64,
+            error_code: BdErrorCode::NoError,
+            operation_id: operation_id.to_u8().unwrap(),
+            results,
             total_num_results: None,
         }
     }

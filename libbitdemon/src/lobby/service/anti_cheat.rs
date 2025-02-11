@@ -33,7 +33,7 @@ impl LobbyHandler for AntiCheatHandler {
                 "[Session {}] Client called unknown task {task_id_value}",
                 session.id
             );
-            return Ok(TaskReply::with_only_error_code(NoError).to_response()?);
+            return Ok(TaskReply::with_only_error_code(NoError, task_id_value).to_response()?);
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -46,7 +46,7 @@ impl LobbyHandler for AntiCheatHandler {
                     "[Session {}] Client called unimplemented task {task_id:?}",
                     session.id
                 );
-                Ok(TaskReply::with_only_error_code(NoError).to_response()?)
+                Ok(TaskReply::with_only_error_code(NoError, task_id).to_response()?)
             }
         }
     }
@@ -74,6 +74,9 @@ impl AntiCheatHandler {
             session.id
         );
 
-        Ok(TaskReply::with_only_error_code(NoError).to_response()?)
+        Ok(
+            TaskReply::with_only_error_code(NoError, AntiCheatTaskId::ReportConsoleDetails)
+                .to_response()?,
+        )
     }
 }

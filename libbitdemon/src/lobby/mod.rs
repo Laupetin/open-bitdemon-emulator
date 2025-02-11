@@ -248,7 +248,7 @@ impl BdMessageHandler for LobbyServer {
                     "[Session {}] Tried to call unavailable service {service_id:?}",
                     session.id
                 );
-                TaskReply::with_only_error_code(ServiceNotAvailable)
+                TaskReply::with_only_error_code(ServiceNotAvailable, 0)
                     .to_response()?
                     .send(session)?;
 

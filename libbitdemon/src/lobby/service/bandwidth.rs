@@ -43,7 +43,7 @@ impl LobbyHandler for BandwidthHandler {
                 "[Session {}] Client called unknown task {task_id_value}",
                 session.id
             );
-            return Ok(TaskReply::with_only_error_code(NoError).to_response()?);
+            return Ok(TaskReply::with_only_error_code(NoError, task_id_value).to_response()?);
         }
         let task_id = maybe_task_id.unwrap();
 
