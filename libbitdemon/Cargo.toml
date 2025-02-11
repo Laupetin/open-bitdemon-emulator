@@ -9,6 +9,7 @@ name = "bitdemon"
 [dependencies]
 byteorder.workspace = true
 cbc.workspace = true
+chrono.workspace = true
 des.workspace = true
 hmac.workspace = true
 log.workspace = true

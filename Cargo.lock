@@ -77,22 +77,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "auth-server"
-version = "0.1.0"
-dependencies = [
- "byteorder",
- "cbc",
- "chrono",
- "des",
- "env_logger",
- "libbitdemon",
- "log",
- "num-derive",
- "num-traits",
- "snafu",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -237,10 +221,8 @@ dependencies = [
 name = "dw-server"
 version = "0.1.0"
 dependencies = [
- "auth-server",
  "env_logger",
  "libbitdemon",
- "lobby-server",
  "log",
 ]
 
@@ -365,6 +347,7 @@ version = "0.1.0"
 dependencies = [
  "byteorder",
  "cbc",
+ "chrono",
  "des",
  "hmac",
  "log",
@@ -381,18 +364,6 @@ name = "libc"
 version = "0.2.169"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
-
-[[package]]
-name = "lobby-server"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "libbitdemon",
- "log",
- "num-derive",
- "num-traits",
- "snafu",
-]
 
 [[package]]
 name = "log"
@@ -524,118 +495,6 @@ name = "rustversion"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7c45b9784283f1b2e7fb61b42047c2fd678ef0960d4f6f1eba131594cc369d4"
-
-[[package]]
-name = "service-anti-cheat"
-version = "0.1.0"
-
-[[package]]
-name = "service-bandwidth"
-version = "0.1.0"
-
-[[package]]
-name = "service-content-streaming"
-version = "0.1.0"
-
-[[package]]
-name = "service-counter"
-version = "0.1.0"
-
-[[package]]
-name = "service-dml"
-version = "0.1.0"
-
-[[package]]
-name = "service-event-log"
-version = "0.1.0"
-
-[[package]]
-name = "service-facebook"
-version = "0.1.0"
-
-[[package]]
-name = "service-friends"
-version = "0.1.0"
-
-[[package]]
-name = "service-group"
-version = "0.1.0"
-
-[[package]]
-name = "service-key-archive"
-version = "0.1.0"
-
-[[package]]
-name = "service-league"
-version = "0.1.0"
-
-[[package]]
-name = "service-link-code"
-version = "0.1.0"
-
-[[package]]
-name = "service-mail"
-version = "0.1.0"
-
-[[package]]
-name = "service-matchmaking"
-version = "0.1.0"
-
-[[package]]
-name = "service-messaging"
-version = "0.1.0"
-
-[[package]]
-name = "service-pooled-storage"
-version = "0.1.0"
-
-[[package]]
-name = "service-profiles"
-version = "0.1.0"
-
-[[package]]
-name = "service-rich-presence"
-version = "0.1.0"
-
-[[package]]
-name = "service-stats"
-version = "0.1.0"
-
-[[package]]
-name = "service-storage"
-version = "0.1.0"
-
-[[package]]
-name = "service-subscription"
-version = "0.1.0"
-
-[[package]]
-name = "service-tags"
-version = "0.1.0"
-
-[[package]]
-name = "service-teams"
-version = "0.1.0"
-
-[[package]]
-name = "service-title-utilities"
-version = "0.1.0"
-
-[[package]]
-name = "service-twitch"
-version = "0.1.0"
-
-[[package]]
-name = "service-twitter"
-version = "0.1.0"
-
-[[package]]
-name = "service-vote-rank"
-version = "0.1.0"
-
-[[package]]
-name = "service-youtube"
-version = "0.1.0"
 
 [[package]]
 name = "sha1"

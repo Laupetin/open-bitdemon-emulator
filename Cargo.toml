@@ -1,37 +1,8 @@
 [workspace]
 members = [
     "libbitdemon",
-    "auth/auth-server",
-    "lobby/lobby-server",
-    "lobby/service-anti-cheat",
-    "lobby/service-bandwidth",
-    "lobby/service-content-streaming",
-    "lobby/service-counter",
-    "lobby/service-dml",
-    "lobby/service-event-log",
-    "lobby/service-facebook",
-    "lobby/service-friends",
-    "lobby/service-group",
-    "lobby/service-key-archive",
-    "lobby/service-league",
-    "lobby/service-link-code",
-    "lobby/service-mail",
-    "lobby/service-matchmaking",
-    "lobby/service-messaging",
-    "lobby/service-pooled-storage",
-    "lobby/service-profiles",
-    "lobby/service-rich-presence",
-    "lobby/service-stats",
-    "lobby/service-storage",
-    "lobby/service-subscription",
-    "lobby/service-tags",
-    "lobby/service-teams",
-    "lobby/service-title-utilities",
-    "lobby/service-twitch",
-    "lobby/service-twitter",
-    "lobby/service-vote-rank",
-    "lobby/service-youtube"
-    , "dw-server"]
+    "dw-server"
+]
 resolver = "1"
 
 [workspace.dependencies]

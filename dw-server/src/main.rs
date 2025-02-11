@@ -1,6 +1,6 @@
-use auth_server::AuthServer;
+use bitdemon::auth::AuthServer;
+use bitdemon::lobby::LobbyServer;
 use bitdemon::networking::bd_socket::BdSocket;
-use lobby_server::LobbyServer;
 use log::LevelFilter;
 use std::sync::Arc;
 
