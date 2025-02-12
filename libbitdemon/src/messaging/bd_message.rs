@@ -20,14 +20,14 @@ impl BdMessage {
     pub fn new(session: &BdSession, mut buf: Vec<u8>) -> Result<Self, Box<dyn Error>> {
         let encrypted = buf.get(0).unwrap();
         if *encrypted > 0 {
-            ensure!(session.authentication.is_some(), NoSessionKeySnafu {});
+            ensure!(session.authentication().is_some(), NoSessionKeySnafu {});
             let seed = u32::from_le_bytes(buf[1..5].try_into().unwrap());
 
             let iv = generate_iv_from_seed(seed);
             let buf_len = buf.len();
             decrypt_buffer_in_place(
                 &mut buf[5..buf_len],
-                &session.authentication.as_ref().unwrap().session_key,
+                &session.authentication().unwrap().session_key,
                 &iv,
             )?;
 
@@ -36,7 +36,7 @@ impl BdMessage {
             // Hmac does not include the message type byte that follows so skip that.
             let expected_hmac = calculate_hmac(
                 &buf[10..buf.len()],
-                &session.authentication.as_ref().unwrap().session_key,
+                &session.authentication().unwrap().session_key,
             );
 
             ensure!(

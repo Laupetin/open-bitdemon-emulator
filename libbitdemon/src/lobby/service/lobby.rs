@@ -78,7 +78,7 @@ impl LobbyHandler for LobbyServiceHandler {
             session.id, auth_proof.user_id, auth_proof.username
         );
 
-        session.authentication = Some(SessionAuthentication {
+        session.set_authentication(SessionAuthentication {
             user_id: auth_proof.user_id,
             username: auth_proof.username,
             session_key: auth_proof.session_key,
@@ -86,5 +86,9 @@ impl LobbyHandler for LobbyServiceHandler {
         });
 
         Ok(ConnectionIdResponse::new(session.id).to_response()?)
+    }
+
+    fn requires_authentication(&self) -> bool {
+        false
     }
 }

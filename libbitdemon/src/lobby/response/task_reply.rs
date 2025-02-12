@@ -1,4 +1,5 @@
-﻿use crate::lobby::response::BdMessageType;
+﻿use crate::domain::result_slice::ResultSlice;
+use crate::lobby::response::BdMessageType;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
 use crate::messaging::bd_serialization::BdSerialize;
 use crate::messaging::bd_writer::BdWriter;
@@ -38,6 +39,25 @@ impl TaskReply {
             operation_id: operation_id.to_u8().unwrap(),
             results,
             total_num_results: None,
+        }
+    }
+
+    pub fn with_result_slice<T: ToPrimitive>(
+        operation_id: T,
+        results: ResultSlice<Box<dyn BdSerialize>>,
+    ) -> TaskReply {
+        let total_count = results.total_count();
+        let total_num_results = if total_count != results.data().len() {
+            Some(total_count as u32)
+        } else {
+            None
+        };
+        TaskReply {
+            transaction_id: 0u64,
+            error_code: BdErrorCode::NoError,
+            operation_id: operation_id.to_u8().unwrap(),
+            results: results.into_data(),
+            total_num_results,
         }
     }
 }

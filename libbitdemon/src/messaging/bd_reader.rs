@@ -188,63 +188,63 @@ impl BdReader {
         Ok(self.next_data_type()?.eq_non_array(BdDataType::BoolType))
     }
 
-    pub fn next_is_int8(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_i8(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::SignedChar8Type))
     }
 
-    pub fn next_is_uint8(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_u8(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::UnsignedChar8Type))
     }
 
-    pub fn next_is_int16(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_i16(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::SignedInteger16Type))
     }
 
-    pub fn next_is_uint16(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_u16(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::UnsignedInteger16Type))
     }
 
-    pub fn next_is_int32(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_i32(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::SignedInteger32Type))
     }
 
-    pub fn next_is_uint32(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_u32(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::UnsignedInteger32Type))
     }
 
-    pub fn next_is_int64(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_i64(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::SignedInteger64Type))
     }
 
-    pub fn next_is_uint64(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_u64(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::UnsignedInteger64Type))
     }
 
-    pub fn next_is_float(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_f32(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self.next_data_type()?.eq_non_array(BdDataType::Float32Type))
     }
 
-    pub fn next_is_double(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_f64(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self.next_data_type()?.eq_non_array(BdDataType::Float64Type))
     }
 
-    pub fn next_is_string(&mut self) -> Result<bool, Box<dyn Error>> {
+    pub fn next_is_str(&mut self) -> Result<bool, Box<dyn Error>> {
         Ok(self
             .next_data_type()?
             .eq_non_array(BdDataType::SignedChar8StringType))

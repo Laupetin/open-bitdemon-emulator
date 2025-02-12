@@ -7,7 +7,7 @@ use crate::lobby::service::lobby::LobbyServiceHandler;
 use crate::lobby::LobbyServiceId::LobbyService;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
-use crate::messaging::BdErrorCode::ServiceNotAvailable;
+use crate::messaging::BdErrorCode::{AccessDenied, ServiceNotAvailable};
 use crate::networking::bd_session::BdSession;
 use crate::networking::bd_socket::BdMessageHandler;
 use log::{info, warn};
@@ -188,6 +188,10 @@ pub trait LobbyHandler {
         session: &mut BdSession,
         message: BdMessage,
     ) -> Result<BdResponse, Box<dyn Error>>;
+
+    fn requires_authentication(&self) -> bool {
+        true
+    }
 }
 
 pub struct LobbyServer {
@@ -237,9 +241,16 @@ impl BdMessageHandler for LobbyServer {
 
         match maybe_handler {
             Some(handler) => {
-                message.reader.set_type_checked(true);
-                let mut response = handler.handle_message(session, message)?;
-                response.send(session)?;
+                if handler.requires_authentication() && session.authentication().is_none() {
+                    warn!("[Session {}] Tried to service {service_id:?} that requires authentication while being unauthenticated", session.id);
+                    TaskReply::with_only_error_code(AccessDenied, 0)
+                        .to_response()?
+                        .send(session)?;
+                } else {
+                    message.reader.set_type_checked(true);
+                    let mut response = handler.handle_message(session, message)?;
+                    response.send(session)?;
+                }
 
                 Ok(())
             }

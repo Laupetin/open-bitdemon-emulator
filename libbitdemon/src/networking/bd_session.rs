@@ -7,7 +7,7 @@ pub type SessionId = u64;
 
 pub struct BdSession {
     pub id: SessionId,
-    pub authentication: Option<SessionAuthentication>,
+    authentication: Option<SessionAuthentication>,
     stream: BufReader<TcpStream>,
 }
 
@@ -40,5 +40,14 @@ impl BdSession {
 
     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
         self.stream.get_ref().peer_addr()
+    }
+
+    pub fn authentication(&self) -> Option<&SessionAuthentication> {
+        self.authentication.as_ref()
+    }
+
+    pub fn set_authentication(&mut self, authentication: SessionAuthentication) {
+        debug_assert!(self.authentication.is_none());
+        self.authentication = Some(authentication);
     }
 }

@@ -30,7 +30,7 @@ impl BdResponse {
     }
 
     pub fn send(&mut self, session: &mut BdSession) -> Result<(), Box<dyn Error>> {
-        if self.should_encrypt && session.authentication.is_some() {
+        if self.should_encrypt && session.authentication().is_some() {
             let seed = generate_iv_seed();
             let iv = generate_iv_from_seed(seed);
 
@@ -38,7 +38,7 @@ impl BdResponse {
                 .splice(0..0, RESPONSE_SIGNATURE.to_le_bytes().iter().cloned());
             encrypt_buffer_in_place(
                 &mut self.data,
-                &session.authentication.as_ref().unwrap().session_key,
+                &session.authentication().unwrap().session_key,
                 &iv,
             );
 
