@@ -9,7 +9,7 @@ use crate::messaging::bd_serialization::{BdDeserialize, BdSerialize};
 use crate::messaging::bd_writer::BdWriter;
 use crate::messaging::BdErrorCode;
 use crate::networking::bd_session::BdSession;
-use log::warn;
+use log::{info, warn};
 use num_traits::FromPrimitive;
 use snafu::Snafu;
 use std::error::Error;
@@ -22,23 +22,23 @@ pub struct StorageFileInfo {
     /// Must be unique across all files the owner of the file owns.
     /// May or may not be unique across all users.
     /// May or may not be unique across all titles.
-    id: u64,
+    pub id: u64,
     /// The name of the stored file.
     /// It may contain an extension or path separators.
-    filename: String,
+    pub filename: String,
     /// The title the file was uploaded for.
-    title: Title,
+    pub title: Title,
     /// The size of the file in bytes.
-    file_size: i64,
+    pub file_size: u64,
     /// The seconds timestamp of when the file was initially uploaded or created.
-    created: i64,
+    pub created: i64,
     /// The seconds timestamp of when the file was last modified.
     /// Must be greater or equal to the creation timestamp.
-    modified: i64,
+    pub modified: i64,
     /// The visibility level of the file.
-    visibility: FileVisibility,
+    pub visibility: FileVisibility,
     /// The id of the user that owns the file.
-    owner_id: u64,
+    pub owner_id: u64,
 }
 
 /// Determines the visibility of a file
@@ -51,6 +51,7 @@ pub enum FileVisibility {
 }
 
 /// Errors that may occur when handling storage calls.
+#[derive(Debug)]
 pub enum StorageServiceError {
     /// The authenticated user does not have permission to perform the requested operation.
     PermissionDeniedError,
@@ -551,10 +552,23 @@ impl StorageHandler {
     ) -> Result<BdResponse, Box<dyn Error>> {
         let filename = reader.read_str()?;
 
+        info!(
+            "[Session {}] Requesting publisher file {}",
+            session.id,
+            filename.as_str()
+        );
+
         let result = self
             .publisher_storage_service
-            .get_publisher_file_data(session, filename);
+            .get_publisher_file_data(session, filename.clone());
 
+        if let Err(err) = &result {
+            warn!(
+                "[Session {}] Failed to get publisher file {}: {err:?}",
+                session.id,
+                filename.as_str()
+            );
+        }
         self.answer_for_file_data(StorageTaskId::GetPublisherFile, result)
     }
 

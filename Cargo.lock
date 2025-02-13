@@ -235,6 +235,8 @@ dependencies = [
  "env_logger",
  "libbitdemon",
  "log",
+ "num-derive",
+ "num-traits",
  "rusqlite",
 ]
 
