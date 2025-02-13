@@ -5,8 +5,9 @@ edition = "2021"
 
 [dependencies]
 libbitdemon = { path = "../libbitdemon" }
-rusqlite = "0.33.0"
+rusqlite = { version = "0.33.0", features = ["bundled", "blob"] }
 
+chrono.workspace = true
 env_logger.workspace = true
 log.workspace = true
 num-derive.workspace = true

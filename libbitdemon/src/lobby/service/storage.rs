@@ -42,12 +42,12 @@ pub struct StorageFileInfo {
 }
 
 /// Determines the visibility of a file
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum FileVisibility {
-    /// The file is visible for any logged-in user.
-    VisiblePublic = 0,
     /// The file can only be seen by the user that owns it.
-    VisiblePrivate = 1,
+    VisiblePrivate,
+    /// The file is visible for any logged-in user.
+    VisiblePublic,
 }
 
 /// Errors that may occur when handling storage calls.
@@ -569,6 +569,7 @@ impl StorageHandler {
                 filename.as_str()
             );
         }
+
         self.answer_for_file_data(StorageTaskId::GetPublisherFile, result)
     }
 
