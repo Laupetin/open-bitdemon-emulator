@@ -538,6 +538,10 @@ impl BdReader {
 
         let mut buf = Vec::new();
         self.cursor.read_until(0u8, &mut buf)?;
+        if !buf.is_empty() {
+            // Remove the 0 byte
+            buf.remove(buf.len() - 1);
+        }
 
         Ok(String::from_utf8(buf)?)
     }
@@ -868,6 +872,10 @@ impl BdReader {
         for _ in 0..num_elements {
             let mut buf = Vec::new();
             self.cursor.read_until(0u8, &mut buf)?;
+            if !buf.is_empty() {
+                // Remove the 0 byte
+                buf.remove(buf.len() - 1);
+            }
 
             result.push(String::from_utf8(buf)?);
         }
