@@ -2,6 +2,7 @@ pub mod anti_cheat;
 pub mod bandwidth;
 pub mod counter;
 pub mod dml;
+pub mod group;
 pub mod league;
 mod lsg;
 mod response;

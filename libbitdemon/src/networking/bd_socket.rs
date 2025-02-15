@@ -30,30 +30,40 @@ pub trait BdMessageHandler {
 }
 
 pub struct BdSocket {
+    session_manager: Arc<SessionManager>,
     listener: Option<TcpListener>,
 }
 
 impl BdSocket {
     /// Creates a new BdSocket instance and binds it to the specified port.
     pub fn new(port: u16) -> Result<BdSocket, io::Error> {
+        Self::new_with_session_manager(port, Arc::new(SessionManager::new()))
+    }
+
+    /// Creates a new BdSocket instance and binds it to the specified port.
+    pub fn new_with_session_manager(
+        port: u16,
+        session_manager: Arc<SessionManager>,
+    ) -> Result<BdSocket, io::Error> {
         let listener = TcpListener::bind(format!("0.0.0.0:{port}"))?;
 
         info!("Opened bitdemon socket on port {port}");
 
         Ok(BdSocket {
             listener: Some(listener),
+            session_manager,
         })
     }
 
     fn listen(
         listener: &TcpListener,
+        session_manager: &Arc<SessionManager>,
         message_handler: Arc<dyn BdMessageHandler + Send + Sync>,
     ) -> Result<(), io::Error> {
-        let session_manager = Arc::new(SessionManager::new());
         for stream in listener.incoming() {
             let stream = stream?;
 
-            let session_manager = Arc::clone(&session_manager);
+            let session_manager = Arc::clone(session_manager);
             let message_handler = Arc::clone(&message_handler);
             thread::spawn(move || {
                 let mut session = BdSession::new(stream);
@@ -70,7 +80,11 @@ impl BdSocket {
         &mut self,
         message_handler: Arc<dyn BdMessageHandler + Send + Sync>,
     ) -> Result<(), io::Error> {
-        Self::listen(self.listener.as_ref().unwrap(), message_handler)
+        Self::listen(
+            self.listener.as_ref().unwrap(),
+            &self.session_manager,
+            message_handler,
+        )
     }
 
     pub fn run_async(
@@ -79,8 +93,14 @@ impl BdSocket {
     ) -> JoinHandle<Result<(), io::Error>> {
         let message_handler = Arc::clone(&message_handler);
         let listener = self.listener.take();
+        let session_manager = self.session_manager.clone();
         thread::spawn(move || -> Result<(), io::Error> {
-            Self::listen(listener.as_ref().unwrap(), message_handler)
+            let session_manager = session_manager;
+            Self::listen(
+                listener.as_ref().unwrap(),
+                &session_manager,
+                message_handler,
+            )
         })
     }
 
