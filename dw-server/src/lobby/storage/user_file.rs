@@ -1,6 +1,6 @@
 ﻿use crate::lobby::storage::db::{from_file_visibility, from_title, to_file_visibility, STORAGE_DB};
 use bitdemon::domain::result_slice::ResultSlice;
-use bitdemon::lobby::handler::storage::{
+use bitdemon::lobby::storage::{
     FileVisibility, StorageFileInfo, StorageService, StorageServiceError,
 };
 use bitdemon::networking::bd_session::BdSession;

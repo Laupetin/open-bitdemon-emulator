@@ -1,5 +1,6 @@
 pub mod handler;
 mod response;
+pub mod storage;
 
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::lobby::handler::lobby::LobbyServiceHandler;

@@ -1,5 +1,5 @@
 ﻿use bitdemon::domain::title::Title;
-use bitdemon::lobby::handler::storage::FileVisibility;
+use bitdemon::lobby::storage::FileVisibility;
 use log::info;
 use num_traits::{FromPrimitive, ToPrimitive};
 use rusqlite::Connection;

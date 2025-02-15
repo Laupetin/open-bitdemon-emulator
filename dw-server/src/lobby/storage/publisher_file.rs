@@ -1,6 +1,6 @@
 ﻿use bitdemon::domain::result_slice::ResultSlice;
 use bitdemon::domain::title::Title;
-use bitdemon::lobby::handler::storage::{
+use bitdemon::lobby::storage::{
     FileVisibility, PublisherStorageService, StorageFileInfo, StorageServiceError,
 };
 use bitdemon::networking::bd_session::BdSession;
