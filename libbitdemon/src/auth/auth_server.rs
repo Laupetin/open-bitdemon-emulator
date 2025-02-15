@@ -34,7 +34,7 @@ impl AuthServer {
     }
 
     pub fn add_handler(&self, message_type: AuthMessageType, handler: Arc<ThreadSafeAuthHandler>) {
-        info!("Adding {message_type:?} auth service");
+        info!("Adding {message_type:?} auth handler");
         self.auth_handlers
             .write()
             .unwrap()

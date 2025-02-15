@@ -1,9 +1,9 @@
+pub mod handler;
 mod response;
-pub mod service;
 
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
+use crate::lobby::handler::lobby::LobbyServiceHandler;
 use crate::lobby::response::task_reply::TaskReply;
-use crate::lobby::service::lobby::LobbyServiceHandler;
 use crate::lobby::LobbyServiceId::LobbyService;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
@@ -210,7 +210,7 @@ impl LobbyServer {
     }
 
     pub fn add_service(&self, service_id: LobbyServiceId, handler: Arc<ThreadSafeLobbyHandler>) {
-        info!("Adding {service_id:?} lobby service");
+        info!("Adding {service_id:?} lobby handler");
         self.lobby_handlers
             .write()
             .unwrap()
