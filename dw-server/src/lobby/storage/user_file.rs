@@ -1,7 +1,7 @@
 ﻿use crate::lobby::storage::db::{from_file_visibility, from_title, to_file_visibility, STORAGE_DB};
 use bitdemon::domain::result_slice::ResultSlice;
 use bitdemon::lobby::storage::{
-    FileVisibility, StorageFileInfo, StorageService, StorageServiceError,
+    FileVisibility, StorageFileInfo, StorageServiceError, UserStorageService,
 };
 use bitdemon::networking::bd_session::BdSession;
 use chrono::Utc;
@@ -12,7 +12,7 @@ pub struct DwUserStorageService {}
 const MAX_FILENAME_LENGTH: usize = 260;
 const MAX_USER_FILE_SIZE: usize = 50_000; // 50KB
 
-impl StorageService for DwUserStorageService {
+impl UserStorageService for DwUserStorageService {
     fn get_storage_file_data_by_id(
         &self,
         session: &BdSession,

@@ -3,7 +3,7 @@ use crate::lobby::response::task_reply::TaskReply;
 use crate::lobby::storage::result::FileDataResult;
 use crate::lobby::storage::service::{
     FileVisibility, StorageFileInfo, StorageServiceError, ThreadSafePublisherStorageService,
-    ThreadSafeStorageService,
+    ThreadSafeUserStorageService,
 };
 use crate::lobby::LobbyHandler;
 use crate::messaging::bd_message::BdMessage;
@@ -17,7 +17,7 @@ use std::error::Error;
 use std::sync::Arc;
 
 pub struct StorageHandler {
-    storage_service: Arc<ThreadSafeStorageService>,
+    storage_service: Arc<ThreadSafeUserStorageService>,
     publisher_storage_service: Arc<ThreadSafePublisherStorageService>,
 }
 
@@ -91,7 +91,7 @@ impl LobbyHandler for StorageHandler {
 
 impl StorageHandler {
     pub fn new(
-        storage_service: Arc<ThreadSafeStorageService>,
+        storage_service: Arc<ThreadSafeUserStorageService>,
         publisher_storage_service: Arc<ThreadSafePublisherStorageService>,
     ) -> StorageHandler {
         StorageHandler {

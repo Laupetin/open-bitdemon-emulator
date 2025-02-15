@@ -50,10 +50,15 @@ pub enum StorageServiceError {
     StorageFileNotFoundError,
 }
 
-pub type ThreadSafeStorageService = dyn StorageService + Sync + Send;
+pub type ThreadSafeUserStorageService = dyn UserStorageService + Sync + Send;
 
-/// Implements domain logic for the storage handler.
-pub trait StorageService {
+/// Implements domain logic concerning user files of the storage service.
+///
+/// User files are files created by users of the service and are bound to the title they are created for.
+/// If a file is private it can only be accessed by the user itself.
+/// In case it is public, it can also be accessed by other users.
+/// Users can create, read and delete files bound to their own user id.
+pub trait UserStorageService {
     /// Retrieves the data of a file identified by an id.
     ///
     /// The owner is **NOT** necessarily the user that tries to retrieve the file.
@@ -221,6 +226,11 @@ pub trait StorageService {
 
 pub type ThreadSafePublisherStorageService = dyn PublisherStorageService + Sync + Send;
 
+/// Implements domain logic concerning publisher files.
+///
+/// Publisher files are files offered by the backend service provider for a certain title.
+/// They can be read by any user that is authenticated for this title.
+/// Users cannot create or overwrite publisher files.
 pub trait PublisherStorageService {
     /// Gets the data of a specified publisher file.
     ///
