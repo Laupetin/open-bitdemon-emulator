@@ -4,12 +4,15 @@ use log::info;
 use num_traits::{FromPrimitive, ToPrimitive};
 use rusqlite::Connection;
 use std::cell::RefCell;
+use std::fs::create_dir_all;
 
 thread_local! {
     pub static STORAGE_DB: RefCell<Connection> = RefCell::new(initialized_db());
 }
 
 fn initialized_db() -> Connection {
+    create_dir_all("db").expect("to be able to create dir");
+
     let conn =
         Connection::open("db/storage.db").expect("expected db connection to be able to open");
 

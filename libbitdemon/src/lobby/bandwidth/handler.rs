@@ -1,4 +1,5 @@
-﻿use crate::lobby::response::lsg_reply::{LsgResponseCreator, LsgServiceTaskReply};
+﻿use crate::lobby::bandwidth::result::BandwidthTestRejected;
+use crate::lobby::response::lsg_reply::{LsgResponseCreator, LsgServiceTaskReply};
 use crate::lobby::response::task_reply::TaskReply;
 use crate::lobby::LobbyHandler;
 use crate::messaging::bd_message::BdMessage;
@@ -82,27 +83,5 @@ impl BandwidthHandler {
 
         // Bandwidth tests are not supported
         Ok(BandwidthTestRejected::with_reason(BdErrorCode::ServiceNotAvailable).to_response()?)
-    }
-}
-
-struct BandwidthTestRejected {
-    reason: BdErrorCode,
-}
-
-impl BandwidthTestRejected {
-    pub fn with_reason(reason: BdErrorCode) -> BandwidthTestRejected {
-        BandwidthTestRejected { reason }
-    }
-}
-
-impl LsgServiceTaskReply for BandwidthTestRejected {
-    fn write_task_reply_data(&self, mut writer: BdWriter) -> Result<(), Box<dyn Error>> {
-        // Test rejected
-        writer.write_bool(true)?;
-
-        // Rejected reason
-        writer.write_u16(self.reason.to_u16().unwrap())?;
-
-        Ok(())
     }
 }

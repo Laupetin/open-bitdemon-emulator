@@ -1,9 +1,14 @@
-pub mod handler;
+pub mod anti_cheat;
+pub mod bandwidth;
+pub mod dml;
+pub mod league;
+mod lsg;
 mod response;
 pub mod storage;
+pub mod title_utilities;
 
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
-use crate::lobby::handler::lobby::LobbyServiceHandler;
+use crate::lobby::lsg::LsgHandler;
 use crate::lobby::response::task_reply::TaskReply;
 use crate::lobby::LobbyServiceId::LobbyService;
 use crate::messaging::bd_message::BdMessage;
@@ -205,7 +210,7 @@ impl LobbyServer {
             lobby_handlers: RwLock::new(HashMap::new()),
         };
 
-        lobby_server.add_service(LobbyService, Arc::new(LobbyServiceHandler::new(key_store)));
+        lobby_server.add_service(LobbyService, Arc::new(LsgHandler::new(key_store)));
 
         lobby_server
     }

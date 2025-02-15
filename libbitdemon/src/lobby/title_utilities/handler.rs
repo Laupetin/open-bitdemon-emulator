@@ -1,9 +1,8 @@
 ﻿use crate::lobby::response::task_reply::TaskReply;
+use crate::lobby::title_utilities::result::TimestampResult;
 use crate::lobby::LobbyHandler;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
-use crate::messaging::bd_serialization::BdSerialize;
-use crate::messaging::bd_writer::BdWriter;
 use crate::messaging::BdErrorCode::NoError;
 use crate::networking::bd_session::BdSession;
 use log::warn;
@@ -81,15 +80,5 @@ impl TitleUtilitiesHandler {
             TaskReply::with_results(TitleUtilitiesTaskId::GetServerTime, vec![result])
                 .to_response()?,
         )
-    }
-}
-
-struct TimestampResult {
-    value: u32,
-}
-
-impl BdSerialize for TimestampResult {
-    fn serialize(&self, writer: &mut BdWriter) -> Result<(), Box<dyn Error>> {
-        writer.write_u32(self.value)
     }
 }

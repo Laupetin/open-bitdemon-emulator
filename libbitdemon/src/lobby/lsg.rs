@@ -14,13 +14,13 @@ use snafu::{ensure, OptionExt, Snafu};
 use std::error::Error;
 use std::sync::Arc;
 
-pub struct LobbyServiceHandler {
+pub struct LsgHandler {
     key_store: Arc<ThreadSafeBackendPrivateKeyStorage>,
 }
 
-impl LobbyServiceHandler {
-    pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> LobbyServiceHandler {
-        LobbyServiceHandler { key_store }
+impl LsgHandler {
+    pub fn new(key_store: Arc<ThreadSafeBackendPrivateKeyStorage>) -> LsgHandler {
+        LsgHandler { key_store }
     }
 }
 
@@ -37,7 +37,7 @@ enum LobbyServiceError {
     AuthenticationExpiredError { expires: i64, now: i64 },
 }
 
-impl LobbyHandler for LobbyServiceHandler {
+impl LobbyHandler for LsgHandler {
     fn handle_message(
         &self,
         session: &mut BdSession,
