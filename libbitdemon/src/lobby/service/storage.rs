@@ -552,23 +552,9 @@ impl StorageHandler {
     ) -> Result<BdResponse, Box<dyn Error>> {
         let filename = reader.read_str()?;
 
-        info!(
-            "[Session {}] Requesting publisher file {}",
-            session.id,
-            filename.as_str()
-        );
-
         let result = self
             .publisher_storage_service
             .get_publisher_file_data(session, filename.clone());
-
-        if let Err(err) = &result {
-            warn!(
-                "[Session {}] Failed to get publisher file {}: {err:?}",
-                session.id,
-                filename.as_str()
-            );
-        }
 
         self.answer_for_file_data(StorageTaskId::GetPublisherFile, result)
     }

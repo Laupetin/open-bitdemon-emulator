@@ -375,6 +375,12 @@ impl PublisherStorageService for DwPublisherStorageService {
         session: &BdSession,
         filename: String,
     ) -> Result<Vec<u8>, StorageServiceError> {
+        info!(
+            "[Session {}] Requesting publisher file {}",
+            session.id,
+            filename.as_str()
+        );
+
         let path_buf = PathBuf::from_str(&filename)
             .or_else(|_| Err(StorageServiceError::StorageFileNotFoundError))?;
 
@@ -384,6 +390,10 @@ impl PublisherStorageService for DwPublisherStorageService {
             .any(|component| component == Component::ParentDir);
 
         if directory_traversal {
+            warn!(
+                "[Session {}] User attempted directory traversal!",
+                session.id
+            );
             return Err(StorageServiceError::StorageFileNotFoundError);
         }
 
@@ -392,8 +402,13 @@ impl PublisherStorageService for DwPublisherStorageService {
             session.authentication().unwrap().title.to_u32().unwrap()
         );
 
-        let buf = fs::read(full_file_path)
-            .or_else(|_| Err(StorageServiceError::StorageFileNotFoundError))?;
+        let buf = fs::read(full_file_path).or_else(|_| {
+            warn!(
+                "[Session {}] Requested publisher file could not be found",
+                session.id
+            );
+            Err(StorageServiceError::StorageFileNotFoundError)
+        })?;
 
         Ok(buf)
     }
@@ -405,6 +420,11 @@ impl PublisherStorageService for DwPublisherStorageService {
         item_offset: usize,
         item_count: usize,
     ) -> Result<ResultSlice<StorageFileInfo>, StorageServiceError> {
+        info!(
+            "[Session {}] Listing publisher files min_date_time={min_date_time} item_offset={item_offset} item_count={item_count}",
+            session.id
+        );
+
         let title = session.authentication().unwrap().title;
         let full_dir_path = format!("storage/publisher/{}", title.to_u32().unwrap());
 
@@ -434,6 +454,11 @@ impl PublisherStorageService for DwPublisherStorageService {
         item_count: usize,
         filter: String,
     ) -> Result<ResultSlice<StorageFileInfo>, StorageServiceError> {
+        info!(
+            "[Session {}] Filtering publisher files min_date_time={min_date_time} item_offset={item_offset} item_count={item_count} filter={filter}",
+            session.id
+        );
+
         let title = session.authentication().unwrap().title;
         let full_dir_path = format!("storage/publisher/{}", title.to_u32().unwrap());
 
