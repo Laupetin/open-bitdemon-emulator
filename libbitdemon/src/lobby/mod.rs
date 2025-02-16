@@ -6,6 +6,7 @@ pub mod group;
 pub mod league;
 mod lsg;
 mod response;
+pub mod rich_presence;
 pub mod storage;
 pub mod title_utilities;
 
@@ -61,7 +62,7 @@ pub enum LobbyServiceId {
     PooledStorage = 58,
     Subscription = 66,
     EventLog = 67,
-    RichPresenceService = 68,
+    RichPresence = 68,
     League = 81,
     League2 = 82,
     // Services with unknown IDs:
