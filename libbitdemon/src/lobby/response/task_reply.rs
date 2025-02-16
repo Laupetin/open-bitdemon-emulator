@@ -5,6 +5,7 @@ use crate::messaging::bd_serialization::BdSerialize;
 use crate::messaging::bd_writer::BdWriter;
 use crate::messaging::{BdErrorCode, StreamMode};
 use num_traits::ToPrimitive;
+use std::cell::RefCell;
 use std::error::Error;
 
 pub struct TaskReply {
@@ -15,13 +16,17 @@ pub struct TaskReply {
     total_num_results: Option<u32>,
 }
 
+thread_local! {
+    pub static TRANSACTION_ID_COUNTER: RefCell<u64> = RefCell::new(0u64);
+}
+
 impl TaskReply {
     pub fn with_only_error_code<T: ToPrimitive>(
         error_code: BdErrorCode,
         operation_id: T,
     ) -> TaskReply {
         TaskReply {
-            transaction_id: 0u64,
+            transaction_id: Self::next_transaction_id(),
             error_code,
             operation_id: operation_id.to_u8().unwrap(),
             results: Vec::new(),
@@ -34,7 +39,7 @@ impl TaskReply {
         results: Vec<Box<dyn BdSerialize>>,
     ) -> TaskReply {
         TaskReply {
-            transaction_id: 0u64,
+            transaction_id: Self::next_transaction_id(),
             error_code: BdErrorCode::NoError,
             operation_id: operation_id.to_u8().unwrap(),
             results,
@@ -53,12 +58,20 @@ impl TaskReply {
             None
         };
         TaskReply {
-            transaction_id: 0u64,
+            transaction_id: Self::next_transaction_id(),
             error_code: BdErrorCode::NoError,
             operation_id: operation_id.to_u8().unwrap(),
             results: results.into_data(),
             total_num_results,
         }
+    }
+
+    fn next_transaction_id() -> u64 {
+        TRANSACTION_ID_COUNTER.with_borrow_mut(|id| {
+            let res = *id;
+            *id += 1;
+            res
+        })
     }
 }
 
