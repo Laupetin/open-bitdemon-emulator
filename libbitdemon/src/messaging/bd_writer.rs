@@ -526,7 +526,7 @@ impl<'a> BdWriter<'a> {
             self.write_data_type(BufferDataType::no_array(BdDataType::BlobType))?;
         }
 
-        self.cursor.write_u32::<LittleEndian>(value.len() as u32)?;
+        self.write_u32(value.len() as u32)?;
         self.cursor.write(value)?;
 
         Ok(())
