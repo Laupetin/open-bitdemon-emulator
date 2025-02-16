@@ -29,10 +29,7 @@ impl LobbyHandler for AntiCheatHandler {
         let task_id_value = message.reader.read_u8()?;
         let maybe_task_id = AntiCheatTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
-            warn!(
-                "[Session {}] Client called unknown task {task_id_value}",
-                session.id
-            );
+            warn!("Client called unknown task {task_id_value}");
             return Ok(TaskReply::with_only_error_code(NoError, task_id_value).to_response()?);
         }
         let task_id = maybe_task_id.unwrap();
@@ -42,10 +39,7 @@ impl LobbyHandler for AntiCheatHandler {
                 Self::report_console_details(session, &mut message.reader)
             }
             AntiCheatTaskId::AnswerChallenges | AntiCheatTaskId::ReportConsoleId => {
-                warn!(
-                    "[Session {}] Client called unimplemented task {task_id:?}",
-                    session.id
-                );
+                warn!("Client called unimplemented task {task_id:?}");
                 Ok(TaskReply::with_only_error_code(NoError, task_id).to_response()?)
             }
         }
@@ -58,7 +52,7 @@ impl AntiCheatHandler {
     }
 
     fn report_console_details(
-        session: &mut BdSession,
+        _session: &mut BdSession,
         reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
         let _blob1 = reader.read_blob()?; // Always blob with length 16 on PC with first 4 byte being 0x756B5B3
@@ -69,10 +63,7 @@ impl AntiCheatHandler {
         let _ulong3 = reader.read_u64()?; // Always 0 on PC
         let _blob2 = reader.read_blob()?; // Always nulled blob with length 6 on PC
 
-        debug!(
-            "[Session {}] Client reported console details changelist={changelist}",
-            session.id
-        );
+        debug!("Client reported console details changelist={changelist}");
 
         Ok(
             TaskReply::with_only_error_code(NoError, AntiCheatTaskId::ReportConsoleDetails)

@@ -29,10 +29,7 @@ impl LobbyHandler for DmlHandler {
         let task_id_value = message.reader.read_u8()?;
         let maybe_task_id = DmlTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
-            warn!(
-                "[Session {}] Client called unknown task {task_id_value}",
-                session.id
-            );
+            warn!("Client called unknown task {task_id_value}");
             return Ok(
                 TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
                     .to_response()?,
@@ -56,11 +53,11 @@ impl DmlHandler {
     }
 
     fn record_ip(
-        session: &mut BdSession,
+        _session: &mut BdSession,
         reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
         let ip = reader.read_u32()?;
-        info!("[Session {}] Recording IP: {ip}", session.id);
+        info!("Recording IP: {ip}");
 
         Ok(
             TaskReply::with_only_error_code(BdErrorCode::NoError, DmlTaskId::RecordIp)

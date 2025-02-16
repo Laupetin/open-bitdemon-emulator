@@ -74,8 +74,8 @@ impl LobbyHandler for LsgHandler {
         );
 
         info!(
-            "[Session {}] Authenticated with opaque data user_id={} username={}",
-            session.id, auth_proof.user_id, auth_proof.username
+            "Authenticated with opaque data user_id={} username={}",
+            auth_proof.user_id, auth_proof.username
         );
 
         session.set_authentication(SessionAuthentication {

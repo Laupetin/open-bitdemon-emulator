@@ -19,10 +19,7 @@ impl UserStorageService for DwUserStorageService {
         owner_id: u64,
         file_id: u64,
     ) -> Result<Vec<u8>, StorageServiceError> {
-        info!(
-            "[Session {}] Requesting file file_id={file_id} owner_id={owner_id}",
-            session.id,
-        );
+        info!("Requesting file file_id={file_id} owner_id={owner_id}");
 
         if session.authentication().unwrap().user_id != owner_id {
             return Err(StorageServiceError::PermissionDeniedError);
@@ -46,10 +43,7 @@ impl UserStorageService for DwUserStorageService {
         owner_id: u64,
         filename: String,
     ) -> Result<Vec<u8>, StorageServiceError> {
-        info!(
-            "[Session {}] Requesting file filename={filename} owner_id={owner_id}",
-            session.id,
-        );
+        info!("Requesting file filename={filename} owner_id={owner_id}",);
 
         let is_owner = session.authentication().unwrap().user_id == owner_id;
 
@@ -109,33 +103,21 @@ impl UserStorageService for DwUserStorageService {
         file_data: Vec<u8>,
     ) -> Result<StorageFileInfo, StorageServiceError> {
         let file_size = file_data.len();
-        info!(
-            "[Session {}] Uploading file filename={filename} owner_id={owner_id} visibility={visibility:?} len={file_size}",
-            session.id
-        );
+        info!("Uploading file filename={filename} owner_id={owner_id} visibility={visibility:?} len={file_size}");
 
         let user_id = session.authentication().unwrap().user_id;
         if user_id != owner_id {
-            warn!(
-                "[Session {}] Tried to upload file for other user",
-                session.id
-            );
+            warn!("Tried to upload file for other user");
             return Err(StorageServiceError::PermissionDeniedError);
         }
 
         if filename.len() > MAX_FILENAME_LENGTH {
-            warn!(
-                "[Session {}] Tried to upload file with too long name",
-                session.id
-            );
+            warn!("Tried to upload file with too long name");
             return Err(StorageServiceError::FilenameTooLongError);
         }
 
         if file_size > MAX_USER_FILE_SIZE {
-            warn!(
-                "[Session {}] Tried to upload file that is too large",
-                session.id
-            );
+            warn!("Tried to upload file that is too large");
             return Err(StorageServiceError::StorageFileTooLargeError);
         }
 
@@ -192,24 +174,15 @@ impl UserStorageService for DwUserStorageService {
         file_data: Vec<u8>,
     ) -> Result<(), StorageServiceError> {
         let file_size = file_data.len();
-        info!(
-            "[Session {}] Uploading file file_id={file_id} owner_id={owner_id} len={file_size}",
-            session.id
-        );
+        info!("Uploading file file_id={file_id} owner_id={owner_id} len={file_size}");
 
         if session.authentication().unwrap().user_id != owner_id {
-            warn!(
-                "[Session {}] Tried to update file for other user",
-                session.id
-            );
+            warn!("Tried to update file for other user");
             return Err(StorageServiceError::PermissionDeniedError);
         }
 
         if file_size > MAX_USER_FILE_SIZE {
-            warn!(
-                "[Session {}] Tried to update file with data that is too large",
-                session.id
-            );
+            warn!("Tried to update file with data that is too large");
             return Err(StorageServiceError::StorageFileTooLargeError);
         }
 
@@ -247,24 +220,15 @@ impl UserStorageService for DwUserStorageService {
         owner_id: u64,
         filename: String,
     ) -> Result<(), StorageServiceError> {
-        info!(
-            "[Session {}] Removing file filename={filename} owner_id={owner_id}",
-            session.id
-        );
+        info!("Removing file filename={filename} owner_id={owner_id}");
 
         if session.authentication().unwrap().user_id != owner_id {
-            warn!(
-                "[Session {}] Tried to delete file for other user",
-                session.id
-            );
+            warn!("Tried to delete file for other user");
             return Err(StorageServiceError::PermissionDeniedError);
         }
 
         if filename.len() > MAX_FILENAME_LENGTH {
-            warn!(
-                "[Session {}] Tried to delete file with too long name",
-                session.id
-            );
+            warn!("Tried to delete file with too long name");
             return Err(StorageServiceError::FilenameTooLongError);
         }
 

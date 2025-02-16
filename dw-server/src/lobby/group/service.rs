@@ -16,14 +16,10 @@ pub struct DwGroupService {
 impl GroupService for DwGroupService {
     fn get_group_counts(
         &self,
-        session: &BdSession,
+        _session: &BdSession,
         groups: &[u32],
     ) -> Result<Vec<u64>, Box<dyn Error>> {
-        info!(
-            "[Session {}] Retrieving counts for {} groups",
-            session.id,
-            groups.len()
-        );
+        info!("Retrieving counts for {} groups", groups.len());
 
         let aggregated_group_counts = self.aggregated_group_counts.read().unwrap();
 
@@ -39,11 +35,7 @@ impl GroupService for DwGroupService {
     }
 
     fn set_groups(&self, session: &BdSession, groups: &[u32]) -> Result<(), Box<dyn Error>> {
-        info!(
-            "[Session {}] Setting {} groups for session",
-            session.id,
-            groups.len()
-        );
+        info!("Setting {} groups for session", groups.len());
 
         let previous_groups;
         let groups_clone = groups.iter().cloned().collect();
@@ -122,11 +114,7 @@ impl DwGroupService {
         }
 
         if let Some(groups) = maybe_groups {
-            info!(
-                "[Session {}] Removing {} groups due to disconnect",
-                session_id,
-                groups.len()
-            );
+            info!("Removing {} groups due to disconnect", groups.len());
             let mut aggregated_group_counts = self.aggregated_group_counts.write().unwrap();
 
             for group_id in groups {

@@ -250,7 +250,7 @@ impl BdMessageHandler for LobbyServer {
         match maybe_handler {
             Some(handler) => {
                 if handler.requires_authentication() && session.authentication().is_none() {
-                    warn!("[Session {}] Tried to service {service_id:?} that requires authentication while being unauthenticated", session.id);
+                    warn!("Tried to service {service_id:?} that requires authentication while being unauthenticated");
                     TaskReply::with_only_error_code(AccessDenied, 0)
                         .to_response()?
                         .send(session)?;
@@ -263,10 +263,7 @@ impl BdMessageHandler for LobbyServer {
                 Ok(())
             }
             None => {
-                warn!(
-                    "[Session {}] Tried to call unavailable service {service_id:?}",
-                    session.id
-                );
+                warn!("Tried to call unavailable service {service_id:?}");
                 TaskReply::with_only_error_code(ServiceNotAvailable, 0)
                     .to_response()?
                     .send(session)?;

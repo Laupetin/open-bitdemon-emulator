@@ -12,12 +12,11 @@ pub struct DwCounterService {
 impl CounterService for DwCounterService {
     fn get_counter_totals(
         &self,
-        session: &BdSession,
+        _session: &BdSession,
         counter_ids: Vec<u32>,
     ) -> Result<Vec<CounterValue>, Box<dyn Error>> {
         info!(
-            "[Session {}] Retrieving counter totals for {} counters",
-            session.id,
+            "Retrieving counter totals for {} counters",
             counter_ids.len()
         );
 
@@ -38,12 +37,11 @@ impl CounterService for DwCounterService {
 
     fn increment_counters(
         &self,
-        session: &BdSession,
+        _session: &BdSession,
         increments: Vec<CounterIncrement>,
     ) -> Result<(), Box<dyn Error>> {
         info!(
-            "[Session {}] Incrementing counter totals for {} counters",
-            session.id,
+            "Incrementing counter totals for {} counters",
             increments.len()
         );
 

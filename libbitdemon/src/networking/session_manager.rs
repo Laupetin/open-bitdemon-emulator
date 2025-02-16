@@ -26,7 +26,7 @@ impl SessionManager {
 
         let peer_addr = session.peer_addr().unwrap();
         info!(
-            "[Session {}] New session from {}:{}",
+            "New session {} from {}:{}",
             session.id,
             peer_addr.ip(),
             peer_addr.port()
@@ -40,7 +40,7 @@ impl SessionManager {
     }
 
     pub fn unregister_session(&self, session: &BdSession) {
-        info!("[Session {}] Session ended", session.id);
+        info!("Session ended");
 
         self.unregister_cb
             .lock()

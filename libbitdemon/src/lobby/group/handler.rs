@@ -35,10 +35,7 @@ impl LobbyHandler for GroupHandler {
         let task_id_value = message.reader.read_u8()?;
         let maybe_task_id = GroupTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
-            warn!(
-                "[Session {}] Client called unknown task {task_id_value}",
-                session.id
-            );
+            warn!("Client called unknown task {task_id_value}");
             return Ok(
                 TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
                     .to_response()?,
@@ -50,10 +47,7 @@ impl LobbyHandler for GroupHandler {
             GroupTaskId::SetGroups => self.set_groups(session, &mut message.reader),
             GroupTaskId::GetGroupCounts => self.get_group_counts(session, &mut message.reader),
             GroupTaskId::GetEntityGroups | GroupTaskId::SetGroupsForEntity => {
-                warn!(
-                    "[Session {}] Client called unimplemented task {task_id:?}",
-                    session.id
-                );
+                warn!("Client called unimplemented task {task_id:?}");
                 Ok(TaskReply::with_only_error_code(BdErrorCode::NoError, task_id).to_response()?)
             }
         }

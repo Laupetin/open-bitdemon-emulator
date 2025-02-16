@@ -39,10 +39,7 @@ impl LobbyHandler for BandwidthHandler {
         let task_id_value = message.reader.read_u8()?;
         let maybe_task_id = BandwidthTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
-            warn!(
-                "[Session {}] Client called unknown task {task_id_value}",
-                session.id
-            );
+            warn!("Client called unknown task {task_id_value}");
             return Ok(TaskReply::with_only_error_code(NoError, task_id_value).to_response()?);
         }
         let task_id = maybe_task_id.unwrap();
@@ -61,22 +58,16 @@ impl BandwidthHandler {
     }
 
     fn handle_bandwidth_task(
-        session: &mut BdSession,
+        _session: &mut BdSession,
         reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
         let test_type_value = reader.read_u8()?;
         match BandwidthTestType::from_u8(test_type_value) {
             Some(test_type) => {
-                debug!(
-                    "[Session {}] Client requested bandwidth test type={test_type:?}",
-                    session.id
-                );
+                debug!("Client requested bandwidth test type={test_type:?}");
             }
             None => {
-                warn!(
-                    "[Session {}] Client requested unknown bandwidth test type={test_type_value}",
-                    session.id
-                )
+                warn!("Client requested unknown bandwidth test type={test_type_value}")
             }
         }
 

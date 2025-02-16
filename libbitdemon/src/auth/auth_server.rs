@@ -70,10 +70,7 @@ impl BdMessageHandler for AuthServer {
                 Ok(())
             }
             None => {
-                warn!(
-                    "[Session {}] Tried to request unavailable auth handler {handler_type:?}",
-                    session.id
-                );
+                warn!("Tried to request unavailable auth handler {handler_type:?}");
                 let only: Box<dyn AuthResponse> = Box::from(AuthResponseWithOnlyCode::new(
                     handler_type.reply_code(),
                     AuthIllegalOperation,

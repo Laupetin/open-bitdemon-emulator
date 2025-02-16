@@ -118,15 +118,12 @@ impl BdSocket {
 
                 match header {
                     0 => {
-                        debug!("[Session {}] Ping", session.id);
+                        debug!("Ping");
                         session.write_u32::<LittleEndian>(0)?;
                     }
                     200 => {
                         let available_buffer_size = session.read_u32::<LittleEndian>()?;
-                        debug!(
-                            "[Session {}] Buffer available: {available_buffer_size}",
-                            session.id
-                        );
+                        debug!("Buffer available: {available_buffer_size}");
                     }
                     _ => {
                         ensure!(
@@ -134,7 +131,7 @@ impl BdSocket {
                             MessageTooLargeSnafu { msg_size: header }
                         );
 
-                        debug!("[Session {}] Message with size {header}", session.id);
+                        debug!("Message with size {header}");
                         let mut msg = vec![0; header as usize];
                         session.read(msg.as_mut_slice())?;
                         let message = BdMessage::new(&session, msg)?;
@@ -150,17 +147,10 @@ impl BdSocket {
                 if let Some(e0) = e.downcast_ref::<io::Error>() {
                     match e0.kind() {
                         ErrorKind::Interrupted | ErrorKind::ConnectionReset => {}
-                        _ => error!(
-                            "[Session {}] Connection terminated: {}: {e}",
-                            session.id,
-                            e0.kind()
-                        ),
+                        _ => error!("Connection terminated: {}: {e}", e0.kind()),
                     }
                 } else {
-                    error!(
-                        "[Session {}] Session terminated with error: {e}",
-                        session.id
-                    )
+                    error!("Session terminated with error: {e}")
                 }
             }
             Ok(_) => (),
