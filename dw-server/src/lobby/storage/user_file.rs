@@ -123,31 +123,47 @@ impl UserStorageService for DwUserStorageService {
 
         let title = session.authentication().unwrap().title;
         let title_num = from_title(title);
-        let created_at = Utc::now().timestamp();
+        let now = Utc::now().timestamp();
         let visibility_num = from_file_visibility(visibility);
 
         let file_id: u64 = STORAGE_DB.with_borrow_mut(|db| {
             let transaction = db.transaction().expect("transaction to be started");
 
-            transaction
-                .execute(
-                    "INSERT INTO user_file
-                     (filename, title, created_at, modified_at, visibility, owner_id, data)
-                     VALUES
-                     (?, ?, ?, ?, ?, ?, ?)",
-                    (
-                        filename.as_str(),
-                        title_num,
-                        created_at,
-                        created_at,
-                        visibility_num,
-                        owner_id,
-                        file_data,
-                    ),
-                )
-                .expect("insertion to be successful");
+            let existing_file: rusqlite::Result<u64> = transaction.query_row(
+                "SELECT u.id FROM user_file u WHERE u.filename = ? AND title = ? AND owner_id = ?",
+                (filename.as_str(), title_num, owner_id),
+                |row| row.get(0),
+            );
 
-            let file_id = transaction.last_insert_rowid() as u64;
+            let file_id;
+            if let Ok(existing_file_id) = existing_file {
+                file_id = existing_file_id;
+                transaction
+                    .execute(
+                        "UPDATE user_file SET data = ?2, modified_at = ?3 WHERE id = ?1",
+                        (file_id, file_data, now),
+                    )
+                    .expect("file update to succeed");
+            } else {
+                transaction
+                    .execute(
+                        "INSERT INTO user_file
+                             (filename, title, created_at, modified_at, visibility, owner_id, data)
+                             VALUES
+                             (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            filename.as_str(),
+                            title_num,
+                            now,
+                            now,
+                            visibility_num,
+                            owner_id,
+                            file_data,
+                        ),
+                    )
+                    .expect("insertion to be successful");
+                file_id = transaction.last_insert_rowid() as u64;
+            }
 
             transaction.commit().expect("commit to be successful");
 
@@ -159,8 +175,8 @@ impl UserStorageService for DwUserStorageService {
             filename,
             title,
             file_size: file_size as u64,
-            created: created_at,
-            modified: created_at,
+            created: now,
+            modified: now,
             visibility,
             owner_id,
         })
@@ -186,13 +202,17 @@ impl UserStorageService for DwUserStorageService {
             return Err(StorageServiceError::StorageFileTooLargeError);
         }
 
+        let now = Utc::now().timestamp();
+        let title = session.authentication().unwrap().title;
+        let title_num = from_title(title);
+
         STORAGE_DB.with_borrow_mut(|db| {
             let transaction = db.transaction().expect("transaction to be open");
 
             let res: u64 = transaction
                 .query_row(
-                    "SELECT u.owner_id FROM user_file u WHERE u.id = ?",
-                    (file_id,),
+                    "SELECT u.owner_id FROM user_file u WHERE u.id = ? AND title = ?",
+                    (file_id, title_num),
                     |row| row.get(0),
                 )
                 .map_err(|_| StorageServiceError::StorageFileNotFoundError)?;
@@ -203,8 +223,8 @@ impl UserStorageService for DwUserStorageService {
 
             transaction
                 .execute(
-                    "UPDATE user_file SET data = ?2 WHERE id = ?1",
-                    (file_id, file_data),
+                    "UPDATE user_file SET data = ?2, modified_at = ?3 WHERE id = ?1",
+                    (file_id, file_data, now),
                 )
                 .expect("file update to succeed");
 
