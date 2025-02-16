@@ -131,8 +131,8 @@ impl UserStorageService for DwUserStorageService {
 
             transaction
                 .execute(
-                    "INSERT INTO user_file u
-                     (filename, title, created, modified, visibility, owner_id, data)
+                    "INSERT INTO user_file
+                     (filename, title, created_at, modified_at, visibility, owner_id, data)
                      VALUES
                      (?, ?, ?, ?, ?, ?, ?)",
                     (
