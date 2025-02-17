@@ -133,7 +133,7 @@ impl BdSocket {
 
                         debug!("Message with size {header}");
                         let mut msg = vec![0; header as usize];
-                        session.read(msg.as_mut_slice())?;
+                        session.read_exact(msg.as_mut_slice())?;
                         let message = BdMessage::new(&session, msg)?;
                         message_handler.handle_message(session, message)?;
                     }

@@ -43,10 +43,10 @@ impl ClientOpaqueAuthProof {
         cursor.write_i64::<LittleEndian>(self.time_expires).unwrap();
         cursor.write_u64::<LittleEndian>(self.license_id).unwrap();
         cursor.write_u64::<LittleEndian>(self.user_id).unwrap();
-        cursor.write(&self.session_key).unwrap();
+        cursor.write_all(&self.session_key).unwrap();
 
         let username_bytes = self.username.as_bytes();
-        cursor.write(username_bytes).unwrap();
+        cursor.write_all(username_bytes).unwrap();
         for _ in username_bytes.len()..64 {
             cursor.write_u8(0).unwrap();
         }

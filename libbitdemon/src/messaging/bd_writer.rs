@@ -71,7 +71,7 @@ impl<'a> BdWriter<'a> {
             }
         );
 
-        if count <= 0 {
+        if count == 0 {
             return Ok(());
         }
 
@@ -119,7 +119,7 @@ impl<'a> BdWriter<'a> {
         if self.mode == StreamMode::BitMode {
             self.write_bits(buffer, buffer.len() * 8)
         } else {
-            self.cursor.write(buffer)?;
+            self.cursor.write_all(buffer)?;
             Ok(())
         }
     }
@@ -317,7 +317,7 @@ impl<'a> BdWriter<'a> {
             self.write_data_type(BufferDataType::no_array(BdDataType::SignedChar8StringType))?;
         }
 
-        self.cursor.write(value.as_bytes())?;
+        self.cursor.write_all(value.as_bytes())?;
         self.cursor.write_u8(0)?;
 
         Ok(())
@@ -506,7 +506,7 @@ impl<'a> BdWriter<'a> {
         self.write_array_num_elements(value.len())?;
 
         for el in value {
-            self.cursor.write(el.as_bytes())?;
+            self.cursor.write_all(el.as_bytes())?;
             self.cursor.write_u8(0)?;
         }
 
@@ -527,7 +527,7 @@ impl<'a> BdWriter<'a> {
         }
 
         self.write_u32(value.len() as u32)?;
-        self.cursor.write(value)?;
+        self.cursor.write_all(value)?;
 
         Ok(())
     }
