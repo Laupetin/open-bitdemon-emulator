@@ -134,7 +134,7 @@ impl BdSocket {
                         debug!("Message with size {header}");
                         let mut msg = vec![0; header as usize];
                         session.read_exact(msg.as_mut_slice())?;
-                        let message = BdMessage::new(&session, msg)?;
+                        let message = BdMessage::new(session, msg)?;
                         message_handler.handle_message(session, message)?;
                     }
                 }
@@ -142,18 +142,15 @@ impl BdSocket {
         };
 
         let connection_result = connection_loop(session);
-        match connection_result {
-            Err(e) => {
-                if let Some(e0) = e.downcast_ref::<io::Error>() {
-                    match e0.kind() {
-                        ErrorKind::Interrupted | ErrorKind::ConnectionReset => {}
-                        _ => error!("Connection terminated: {}: {e}", e0.kind()),
-                    }
-                } else {
-                    error!("Session terminated with error: {e}")
+        if let Err(e) = connection_result {
+            if let Some(e0) = e.downcast_ref::<io::Error>() {
+                match e0.kind() {
+                    ErrorKind::Interrupted | ErrorKind::ConnectionReset => {}
+                    _ => error!("Connection terminated: {}: {e}", e0.kind()),
                 }
+            } else {
+                error!("Session terminated with error: {e}")
             }
-            Ok(_) => (),
         }
     }
 }

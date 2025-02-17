@@ -70,18 +70,14 @@ impl ClientOpaqueAuthProof {
     ) -> Result<Self, Box<dyn Error>> {
         let mut last_buf: [u8; 128] = [0; 128];
 
-        let decryption_successful = key_store
-            .get_valid_keys()
-            .iter()
-            .find(|key| {
-                last_buf = *buf;
-                key.decrypt_data(&mut last_buf)
-                    .expect("Should be able to decrypt opaque data");
+        let decryption_successful = key_store.get_valid_keys().iter().any(|key| {
+            last_buf = *buf;
+            key.decrypt_data(&mut last_buf)
+                .expect("Should be able to decrypt opaque data");
 
-                let magic = u64::from_le_bytes((&last_buf[0..8]).try_into().unwrap());
-                magic == MAGIC
-            })
-            .is_some();
+            let magic = u64::from_le_bytes((&last_buf[0..8]).try_into().unwrap());
+            magic == MAGIC
+        });
 
         ensure!(decryption_successful, UnknownKeySnafu {});
 

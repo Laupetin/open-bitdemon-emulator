@@ -30,7 +30,7 @@ impl LobbyHandler for AntiCheatHandler {
         let maybe_task_id = AntiCheatTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(TaskReply::with_only_error_code(NoError, task_id_value).to_response()?);
+            return TaskReply::with_only_error_code(NoError, task_id_value).to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -43,6 +43,12 @@ impl LobbyHandler for AntiCheatHandler {
                 Ok(TaskReply::with_only_error_code(NoError, task_id).to_response()?)
             }
         }
+    }
+}
+
+impl Default for AntiCheatHandler {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -65,9 +71,7 @@ impl AntiCheatHandler {
 
         debug!("Client reported console details changelist={changelist}");
 
-        Ok(
-            TaskReply::with_only_error_code(NoError, AntiCheatTaskId::ReportConsoleDetails)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(NoError, AntiCheatTaskId::ReportConsoleDetails)
+            .to_response()
     }
 }

@@ -95,7 +95,7 @@ impl AuthHandler for SteamAuthHandler {
         let expires = ((expires_i64) % (u32::MAX as i64)) as u32;
 
         let ticket = AuthTicket {
-            ticket_type: BdAuthTicketType::UserToServiceTicket,
+            ticket_type: BdAuthTicketType::UserToService,
             title: authentication_request.title,
             time_issued: issued,
             time_expires: expires,

@@ -10,6 +10,12 @@ pub struct SessionManager {
     unregister_cb: Mutex<Vec<Box<OnSessionCallback>>>,
 }
 
+impl Default for SessionManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SessionManager {
     pub fn new() -> SessionManager {
         SessionManager {

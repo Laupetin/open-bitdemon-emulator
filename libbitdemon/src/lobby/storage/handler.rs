@@ -51,10 +51,8 @@ impl LobbyHandler for StorageHandler {
         let maybe_task_id = StorageTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(
-                TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
-                    .to_response()?,
-            );
+            return TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
+                .to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -196,25 +194,24 @@ impl StorageHandler {
         let max_num_results = reader.read_u16()?;
         let result_offset = reader.read_u16()?;
 
-        let result;
-        if reader.next_is_str().unwrap_or(false) {
+        let result = if reader.next_is_str().unwrap_or(false) {
             let filter = reader.read_str()?;
-            result = self.storage_service.filter_storage_files(
+            self.storage_service.filter_storage_files(
                 session,
                 owner_id,
                 start_date as i64,
                 result_offset as usize,
                 max_num_results as usize,
                 filter,
-            );
+            )
         } else {
-            result = self.storage_service.list_storage_files(
+            self.storage_service.list_storage_files(
                 session,
                 owner_id,
                 start_date as i64,
                 result_offset as usize,
                 max_num_results as usize,
-            );
+            )
         };
 
         self.answer_for_file_info_slice(StorageTaskId::ListFilesByOwner, result)
@@ -229,23 +226,22 @@ impl StorageHandler {
         let max_num_results = reader.read_u16()?;
         let result_offset = reader.read_u16()?;
 
-        let result;
-        if reader.next_is_str().unwrap_or(false) {
+        let result = if reader.next_is_str().unwrap_or(false) {
             let filter = reader.read_str()?;
-            result = self.publisher_storage_service.filter_publisher_files(
+            self.publisher_storage_service.filter_publisher_files(
                 session,
                 start_date as i64,
                 result_offset as usize,
                 max_num_results as usize,
                 filter,
-            );
+            )
         } else {
-            result = self.publisher_storage_service.list_publisher_files(
+            self.publisher_storage_service.list_publisher_files(
                 session,
                 start_date as i64,
                 result_offset as usize,
                 max_num_results as usize,
-            );
+            )
         };
 
         self.answer_for_file_info_slice(StorageTaskId::ListAllPublisherFiles, result)
@@ -325,9 +321,9 @@ impl StorageHandler {
     }
 }
 
-impl Into<BdErrorCode> for StorageServiceError {
-    fn into(self) -> BdErrorCode {
-        match self {
+impl From<StorageServiceError> for BdErrorCode {
+    fn from(value: StorageServiceError) -> Self {
+        match value {
             StorageServiceError::PermissionDeniedError => BdErrorCode::PermissionDenied,
             StorageServiceError::FilenameTooLongError => BdErrorCode::FilenameMaxLengthExceeded,
             StorageServiceError::StorageFileTooLargeError => BdErrorCode::FileSizeLimitExceeded,

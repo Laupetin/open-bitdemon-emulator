@@ -53,10 +53,8 @@ impl LobbyHandler for LeagueHandler {
         let maybe_task_id = LeagueTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(
-                TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
-                    .to_response()?,
-            );
+            return TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
+                .to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -83,6 +81,12 @@ impl LobbyHandler for LeagueHandler {
     }
 }
 
+impl Default for LeagueHandler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LeagueHandler {
     pub fn new() -> LeagueHandler {
         LeagueHandler {}
@@ -96,10 +100,7 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamId)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamId).to_response()
     }
     fn get_team_ids_for_user(
         _session: &mut BdSession,
@@ -118,10 +119,8 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamIDsForUser)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamIDsForUser)
+            .to_response()
     }
     fn get_team_subdivisions(
         _session: &mut BdSession,
@@ -132,13 +131,8 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(
-            TaskReply::with_only_error_code(
-                BdErrorCode::NoError,
-                LeagueTaskId::GetTeamSubdivisions,
-            )
-            .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamSubdivisions)
+            .to_response()
     }
     fn set_team_name(
         _session: &mut BdSession,
@@ -149,10 +143,8 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::SetTeamName)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::SetTeamName)
+            .to_response()
     }
     fn get_team_infos(
         _session: &mut BdSession,
@@ -162,10 +154,8 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamInfos)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamInfos)
+            .to_response()
     }
     fn get_team_member_infos(
         _session: &mut BdSession,
@@ -175,10 +165,8 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamMemberInfos)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamMemberInfos)
+            .to_response()
     }
     fn get_team_subdivision_infos(
         _session: &mut BdSession,
@@ -188,11 +176,8 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(TaskReply::with_only_error_code(
-            BdErrorCode::NoError,
-            LeagueTaskId::GetTeamSubdivisionInfos,
-        )
-        .to_response()?)
+        TaskReply::with_only_error_code(BdErrorCode::NoError, LeagueTaskId::GetTeamSubdivisionInfos)
+            .to_response()
     }
     fn get_team_subdivision_history(
         _session: &mut BdSession,
@@ -204,10 +189,10 @@ impl LeagueHandler {
 
         // TODO: Do something useful
 
-        Ok(TaskReply::with_only_error_code(
+        TaskReply::with_only_error_code(
             BdErrorCode::NoError,
             LeagueTaskId::GetTeamSubdivisionHistory,
         )
-        .to_response()?)
+        .to_response()
     }
 }

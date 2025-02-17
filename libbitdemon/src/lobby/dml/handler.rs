@@ -30,10 +30,8 @@ impl LobbyHandler for DmlHandler {
         let maybe_task_id = DmlTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(
-                TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
-                    .to_response()?,
-            );
+            return TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
+                .to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -44,6 +42,12 @@ impl LobbyHandler for DmlHandler {
                 Self::get_user_hierarchical_data(session, &mut message.reader)
             }
         }
+    }
+}
+
+impl Default for DmlHandler {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -59,10 +63,7 @@ impl DmlHandler {
         let ip = reader.read_u32()?;
         info!("Recording IP: {ip}");
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, DmlTaskId::RecordIp)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, DmlTaskId::RecordIp).to_response()
     }
 
     fn get_user_data(
@@ -70,10 +71,8 @@ impl DmlHandler {
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
         let dml_info = Self::create_mock_dml_info();
-        Ok(
-            TaskReply::with_results(DmlTaskId::GetUserData, vec![Box::from(dml_info)])
-                .to_response()?,
-        )
+
+        TaskReply::with_results(DmlTaskId::GetUserData, vec![Box::from(dml_info)]).to_response()
     }
 
     fn get_user_hierarchical_data(
@@ -88,11 +87,11 @@ impl DmlHandler {
             tier3: 0,
         };
 
-        Ok(TaskReply::with_results(
+        TaskReply::with_results(
             DmlTaskId::GetUserData,
             vec![Box::from(dml_hierarchical_info)],
         )
-        .to_response()?)
+        .to_response()
     }
 }
 

@@ -36,10 +36,8 @@ impl LobbyHandler for GroupHandler {
         let maybe_task_id = GroupTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(
-                TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
-                    .to_response()?,
-            );
+            return TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
+                .to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -68,10 +66,7 @@ impl GroupHandler {
 
         self.group_service.set_groups(session, &groups)?;
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, GroupTaskId::SetGroups)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, GroupTaskId::SetGroups).to_response()
     }
 
     fn get_group_counts(
@@ -94,6 +89,6 @@ impl GroupHandler {
             })
             .collect();
 
-        Ok(TaskReply::with_results(GroupTaskId::GetGroupCounts, results).to_response()?)
+        TaskReply::with_results(GroupTaskId::GetGroupCounts, results).to_response()
     }
 }
