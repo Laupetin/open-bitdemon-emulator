@@ -20,12 +20,11 @@ impl CounterService for DwCounterService {
             counter_ids.len()
         );
 
-        let mut result = Vec::new();
-        result.reserve(counter_ids.len());
+        let mut result = Vec::with_capacity(counter_ids.len());
 
         let data = self.data.read().unwrap();
         for counter_id in counter_ids {
-            let counter_value = data.get(&counter_id).map(|val| *val).unwrap_or(0);
+            let counter_value = data.get(&counter_id).copied().unwrap_or(0);
             result.push(CounterValue {
                 counter_id,
                 counter_value,

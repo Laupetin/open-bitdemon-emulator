@@ -52,8 +52,7 @@ impl RichPresenceService for DwRichPresenceService {
             return Err(RichPresenceServiceError::TooManyUsersError);
         }
 
-        let mut result = Vec::new();
-        result.reserve(users.len());
+        let mut result = Vec::with_capacity(users.len());
 
         let rich_presences = self.rich_presences.read().unwrap();
         for user in users {
@@ -88,7 +87,7 @@ impl DwRichPresenceService {
 
     fn remove_rich_presence_for_disconnect(&self, user_id: u64) {
         let mut rich_presences = self.rich_presences.write().unwrap();
-        if let Some(_) = rich_presences.remove(&user_id) {
+        if rich_presences.remove(&user_id).is_some() {
             info!(
                 "Removed rich presence for user {} due to disconnect",
                 user_id

@@ -34,7 +34,7 @@ impl Display for SessionLogData {
 }
 
 thread_local! {
-    static SESSION_LOG_DATA: Cell<Option<SessionLogData>> = Cell::new(None);
+    static SESSION_LOG_DATA: Cell<Option<SessionLogData>> = const { Cell::new(None) };
 }
 
 pub fn log_session_id(session_manager: &SessionManager, session_type_name: &'static str) {
@@ -61,7 +61,7 @@ impl CustomFormat<'_> {
         self.finish_header()?;
 
         self.write_args(record)?;
-        write!(self.buf, "\n")
+        writeln!(self.buf)
     }
 
     fn write_header_value<T>(&mut self, value: T) -> io::Result<()>

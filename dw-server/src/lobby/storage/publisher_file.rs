@@ -23,11 +23,10 @@ impl PublisherStorageService for DwPublisherStorageService {
         info!("Requesting publisher file {}", filename.as_str());
 
         let path_buf = PathBuf::from_str(&filename)
-            .or_else(|_| Err(StorageServiceError::StorageFileNotFoundError))?;
+            .map_err(|_| StorageServiceError::StorageFileNotFoundError)?;
 
         let directory_traversal = path_buf
             .components()
-            .into_iter()
             .any(|component| component == Component::ParentDir);
 
         if directory_traversal {
@@ -40,12 +39,10 @@ impl PublisherStorageService for DwPublisherStorageService {
             session.authentication().unwrap().title.to_u32().unwrap()
         );
 
-        let buf = fs::read(full_file_path).or_else(|_| {
+        fs::read(full_file_path).map_err(|_| {
             warn!("Requested publisher file could not be found",);
-            Err(StorageServiceError::StorageFileNotFoundError)
-        })?;
-
-        Ok(buf)
+            StorageServiceError::StorageFileNotFoundError
+        })
     }
 
     fn list_publisher_files(

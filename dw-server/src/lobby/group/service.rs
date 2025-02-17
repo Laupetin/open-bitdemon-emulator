@@ -37,16 +37,16 @@ impl GroupService for DwGroupService {
     fn set_groups(&self, session: &BdSession, groups: &[u32]) -> Result<(), Box<dyn Error>> {
         info!("Setting {} groups for session", groups.len());
 
-        let previous_groups;
-        let groups_clone = groups.iter().cloned().collect();
+        let previous_groups: HashSet<GroupId>;
+        let groups_clone = groups.to_vec();
 
         {
             let mut session_groups = self.session_groups.lock().unwrap();
 
             previous_groups = session_groups
                 .remove(&session.id)
-                .map(|vec| HashSet::from_iter(vec.into_iter()))
-                .unwrap_or_else(|| HashSet::new());
+                .map(HashSet::from_iter)
+                .unwrap_or_default();
 
             session_groups.insert(session.id, groups_clone);
         }
