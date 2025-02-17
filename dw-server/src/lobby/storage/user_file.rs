@@ -73,23 +73,23 @@ impl UserStorageService for DwUserStorageService {
 
     fn list_storage_files(
         &self,
-        session: &BdSession,
-        owner_id: u64,
-        min_date_time: i64,
-        page_offset: usize,
-        page_size: usize,
+        _session: &BdSession,
+        _owner_id: u64,
+        _min_date_time: i64,
+        _page_offset: usize,
+        _page_size: usize,
     ) -> Result<ResultSlice<StorageFileInfo>, StorageServiceError> {
         todo!()
     }
 
     fn filter_storage_files(
         &self,
-        session: &BdSession,
-        owner_id: u64,
-        min_date_time: i64,
-        item_offset: usize,
-        item_count: usize,
-        filter: String,
+        _session: &BdSession,
+        _owner_id: u64,
+        _min_date_time: i64,
+        _item_offset: usize,
+        _item_count: usize,
+        _filter: String,
     ) -> Result<ResultSlice<StorageFileInfo>, StorageServiceError> {
         todo!()
     }
