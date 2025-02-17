@@ -190,11 +190,11 @@ pub trait UserStorageService {
     ///
     /// * [`PermissionDeniedError`][1]: The requested operation is not allowed for the current user.
     /// * [`StorageFileNotFoundError`][2]: The requested file could not be found.
-    /// * [`StorageFileTooLargeException`][3]: The requested file could not be found.
+    /// * [`StorageFileTooLargeError`][3]: The requested file could not be found.
     ///
     /// [1]: StorageServiceError::PermissionDeniedError
     /// [2]: StorageServiceError::StorageFileNotFoundError
-    /// [3]: StorageServiceError::StorageFileTooLargeException
+    /// [3]: StorageServiceError::StorageFileTooLargeError
     fn update_storage_file_data(
         &self,
         session: &BdSession,
