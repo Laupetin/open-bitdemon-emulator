@@ -43,10 +43,10 @@ impl ClientOpaqueAuthProof {
         cursor.write_i64::<LittleEndian>(self.time_expires).unwrap();
         cursor.write_u64::<LittleEndian>(self.license_id).unwrap();
         cursor.write_u64::<LittleEndian>(self.user_id).unwrap();
-        cursor.write(&self.session_key).unwrap();
+        cursor.write_all(&self.session_key).unwrap();
 
         let username_bytes = self.username.as_bytes();
-        cursor.write(username_bytes).unwrap();
+        cursor.write_all(username_bytes).unwrap();
         for _ in username_bytes.len()..64 {
             cursor.write_u8(0).unwrap();
         }
@@ -70,18 +70,14 @@ impl ClientOpaqueAuthProof {
     ) -> Result<Self, Box<dyn Error>> {
         let mut last_buf: [u8; 128] = [0; 128];
 
-        let decryption_successful = key_store
-            .get_valid_keys()
-            .iter()
-            .find(|key| {
-                last_buf = *buf;
-                key.decrypt_data(&mut last_buf)
-                    .expect("Should be able to decrypt opaque data");
+        let decryption_successful = key_store.get_valid_keys().iter().any(|key| {
+            last_buf = *buf;
+            key.decrypt_data(&mut last_buf)
+                .expect("Should be able to decrypt opaque data");
 
-                let magic = u64::from_le_bytes((&last_buf[0..8]).try_into().unwrap());
-                magic == MAGIC
-            })
-            .is_some();
+            let magic = u64::from_le_bytes((&last_buf[0..8]).try_into().unwrap());
+            magic == MAGIC
+        });
 
         ensure!(decryption_successful, UnknownKeySnafu {});
 

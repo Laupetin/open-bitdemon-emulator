@@ -58,6 +58,12 @@ pub struct InMemoryKeyStore {
     state: RwLock<InMemoryKeyState>,
 }
 
+impl Default for InMemoryKeyStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InMemoryKeyStore {
     pub fn new() -> InMemoryKeyStore {
         InMemoryKeyStore {

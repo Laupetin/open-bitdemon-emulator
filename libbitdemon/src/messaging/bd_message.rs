@@ -18,7 +18,7 @@ enum BdMessageError {
 
 impl BdMessage {
     pub fn new(session: &BdSession, mut buf: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-        let encrypted = buf.get(0).unwrap();
+        let encrypted = buf.first().unwrap();
         if *encrypted > 0 {
             ensure!(session.authentication().is_some(), NoSessionKeySnafu {});
             let seed = u32::from_le_bytes(buf[1..5].try_into().unwrap());

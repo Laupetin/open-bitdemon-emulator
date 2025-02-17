@@ -17,7 +17,7 @@ pub struct TaskReply {
 }
 
 thread_local! {
-    pub static TRANSACTION_ID_COUNTER: RefCell<u64> = RefCell::new(0u64);
+    pub static TRANSACTION_ID_COUNTER: RefCell<u64> = const { RefCell::new(0u64) };
 }
 
 impl TaskReply {
@@ -96,10 +96,7 @@ impl ResponseCreator for TaskReply {
             writer.write_u32(self.results.len() as u32)?;
 
             // totalNumResults
-            writer.write_u32(
-                self.total_num_results
-                    .unwrap_or_else(|| self.results.len() as u32),
-            )?;
+            writer.write_u32(self.total_num_results.unwrap_or(self.results.len() as u32))?;
 
             for result in &self.results {
                 result.serialize(&mut writer)?;

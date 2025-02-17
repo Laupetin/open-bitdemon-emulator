@@ -37,7 +37,7 @@ impl BdDeserialize for AuthenticationRequest {
             RequestDataTooLongSnafu { data_len }
         );
 
-        let mut data_buf = Vec::new();
+        let mut data_buf = vec![0; data_len];
         data_buf.resize(data_len, 0u8);
 
         reader.read_bytes(data_buf.as_mut_slice())?;
@@ -71,13 +71,13 @@ pub struct CustomSteamAuthenticationRequest {
 #[derive(Debug, Snafu)]
 enum TicketDeserializationError {
     #[snafu(display("The ticket signature did not match (actual={actual} expected={expected})"))]
-    SignatureMismatchError { actual: u32, expected: u32 },
+    SignatureMismatch { actual: u32, expected: u32 },
     #[snafu(display(
         "The secret data had an unexpected secret length (actual={actual} expected={expected})"
     ))]
-    UnexpectedSecretLengthError { actual: usize, expected: usize },
+    UnexpectedSecretLength { actual: usize, expected: usize },
     #[snafu(display("The username has an invalid length (actual={actual} expected={expected})"))]
-    UsernameTooLongError { actual: usize, expected: usize },
+    UsernameTooLong { actual: usize, expected: usize },
 }
 
 // We cannot decrypt Steam tickets. We can only parse ones that we issued in a custom format.

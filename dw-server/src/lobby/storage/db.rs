@@ -48,7 +48,7 @@ pub fn from_title(value: Title) -> u32 {
     value.to_u32().unwrap()
 }
 
-pub fn to_title(value: u32) -> Title {
+pub fn _to_title(value: u32) -> Title {
     Title::from_u32(value).expect("to be a valid title")
 }
 

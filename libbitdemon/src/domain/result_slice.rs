@@ -45,7 +45,7 @@ impl<T: 'static> ResultSlice<T> {
     }
 
     pub fn total_count(&self) -> usize {
-        self.total_count.unwrap_or_else(|| self.data.len())
+        self.total_count.unwrap_or(self.data.len())
     }
 
     pub fn boxed<T2: From<T>>(self) -> ResultSlice<Box<T2>>

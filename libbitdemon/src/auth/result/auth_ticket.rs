@@ -10,9 +10,9 @@ use std::error::Error;
 #[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, FromPrimitive, ToPrimitive)]
 #[repr(u8)]
 pub enum BdAuthTicketType {
-    UserToServiceTicket = 0x0,
-    HostToServiceTicket = 0x1,
-    UserToHostTicket = 0x2,
+    UserToService = 0x0,
+    HostToService = 0x1,
+    UserToHost = 0x2,
 }
 
 pub struct AuthTicket {

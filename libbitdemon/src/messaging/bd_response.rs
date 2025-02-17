@@ -48,13 +48,13 @@ impl BdResponse {
             session.write_u32::<LittleEndian>(message_length as u32)?;
             session.write_u8(1u8)?; // Encrypted
             session.write_u32::<LittleEndian>(seed)?;
-            session.write(self.data.as_slice())?;
+            session.write_all(self.data.as_slice())?;
         } else {
             // Written length minus length field itself
             let message_length = self.data.len() + 1;
             session.write_u32::<LittleEndian>(message_length as u32)?;
             session.write_u8(0u8)?; // Encrypted
-            session.write(self.data.as_slice())?;
+            session.write_all(self.data.as_slice())?;
         }
 
         Ok(())

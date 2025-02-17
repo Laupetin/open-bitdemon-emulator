@@ -27,14 +27,14 @@ impl LsgHandler {
 #[derive(Debug, Snafu)]
 enum LobbyServiceError {
     #[snafu(display("The title id is unknown (value={title_id})"))]
-    UnknownTitleError { title_id: u32 },
+    UnknownTitle { title_id: u32 },
     #[snafu(display("The specified title id does not match (specified_title={specified_title:?} authenticated_title={authenticated_title:?})"))]
-    InvalidTitleError {
+    InvalidTitle {
         specified_title: Title,
         authenticated_title: Title,
     },
     #[snafu(display("The authentication expired (expires={expires} now={now})"))]
-    AuthenticationExpiredError { expires: i64, now: i64 },
+    AuthenticationExpired { expires: i64, now: i64 },
 }
 
 impl LobbyHandler for LsgHandler {
@@ -85,7 +85,7 @@ impl LobbyHandler for LsgHandler {
             title: auth_proof.title,
         });
 
-        Ok(ConnectionIdResponse::new(session.id).to_response()?)
+        ConnectionIdResponse::new(session.id).to_response()
     }
 
     fn requires_authentication(&self) -> bool {

@@ -2,6 +2,7 @@ use crate::messaging::bd_data_type::{BdDataType, BufferDataType};
 use crate::messaging::StreamMode;
 use byteorder::{LittleEndian, WriteBytesExt};
 use snafu::{ensure, Snafu};
+use std::cmp::Ordering;
 use std::error::Error;
 use std::io::{Cursor, Write};
 
@@ -71,7 +72,7 @@ impl<'a> BdWriter<'a> {
             }
         );
 
-        if count <= 0 {
+        if count == 0 {
             return Ok(());
         }
 
@@ -90,17 +91,21 @@ impl<'a> BdWriter<'a> {
             if self.bit_offset < 8 {
                 self.last_byte |= in_byte << self.bit_offset;
 
-                if self.bit_offset + in_bits > 8 {
-                    let used_bits = 8 - self.bit_offset;
-                    self.cursor.write_u8(self.last_byte)?;
-                    self.bit_offset = (self.bit_offset as i64 + (in_bits as i64 - 8)) as usize;
-                    self.last_byte = in_byte >> used_bits;
-                } else if self.bit_offset + in_bits == 8 {
-                    self.cursor.write_u8(self.last_byte)?;
-                    self.last_byte = 0;
-                    self.bit_offset = 8;
-                } else {
-                    self.bit_offset += in_bits;
+                match (self.bit_offset + in_bits).cmp(&8) {
+                    Ordering::Greater => {
+                        let used_bits = 8 - self.bit_offset;
+                        self.cursor.write_u8(self.last_byte)?;
+                        self.bit_offset = (self.bit_offset as i64 + (in_bits as i64 - 8)) as usize;
+                        self.last_byte = in_byte >> used_bits;
+                    }
+                    Ordering::Equal => {
+                        self.cursor.write_u8(self.last_byte)?;
+                        self.last_byte = 0;
+                        self.bit_offset = 8;
+                    }
+                    Ordering::Less => {
+                        self.bit_offset += in_bits;
+                    }
                 }
             } else if in_bits == 8 {
                 self.cursor.write_u8(in_byte)?;
@@ -119,7 +124,7 @@ impl<'a> BdWriter<'a> {
         if self.mode == StreamMode::BitMode {
             self.write_bits(buffer, buffer.len() * 8)
         } else {
-            self.cursor.write(buffer)?;
+            self.cursor.write_all(buffer)?;
             Ok(())
         }
     }
@@ -317,7 +322,7 @@ impl<'a> BdWriter<'a> {
             self.write_data_type(BufferDataType::no_array(BdDataType::SignedChar8StringType))?;
         }
 
-        self.cursor.write(value.as_bytes())?;
+        self.cursor.write_all(value.as_bytes())?;
         self.cursor.write_u8(0)?;
 
         Ok(())
@@ -506,7 +511,7 @@ impl<'a> BdWriter<'a> {
         self.write_array_num_elements(value.len())?;
 
         for el in value {
-            self.cursor.write(el.as_bytes())?;
+            self.cursor.write_all(el.as_bytes())?;
             self.cursor.write_u8(0)?;
         }
 
@@ -527,7 +532,7 @@ impl<'a> BdWriter<'a> {
         }
 
         self.write_u32(value.len() as u32)?;
-        self.cursor.write(value)?;
+        self.cursor.write_all(value)?;
 
         Ok(())
     }

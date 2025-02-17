@@ -40,7 +40,7 @@ impl LobbyHandler for BandwidthHandler {
         let maybe_task_id = BandwidthTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(TaskReply::with_only_error_code(NoError, task_id_value).to_response()?);
+            return TaskReply::with_only_error_code(NoError, task_id_value).to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -49,6 +49,12 @@ impl LobbyHandler for BandwidthHandler {
                 Self::handle_bandwidth_task(session, &mut message.reader)
             }
         }
+    }
+}
+
+impl Default for BandwidthHandler {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -72,6 +78,6 @@ impl BandwidthHandler {
         }
 
         // Bandwidth tests are not supported
-        Ok(BandwidthTestRejected::with_reason(BdErrorCode::ServiceNotAvailable).to_response()?)
+        BandwidthTestRejected::with_reason(BdErrorCode::ServiceNotAvailable).to_response()
     }
 }

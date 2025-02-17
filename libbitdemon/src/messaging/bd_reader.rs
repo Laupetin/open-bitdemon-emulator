@@ -11,17 +11,17 @@ enum BdReaderError {
     #[snafu(display(
         "Expected type {expected_type:?} but got type {actual_type:?} when reading from bdBuffer."
     ))]
-    UnexpectedDataTypeError {
+    UnexpectedDataType {
         expected_type: BufferDataType,
         actual_type: BufferDataType,
     },
     #[snafu(display("Expected mode {expected_mode:?} but is in mode {actual_mode:?}."))]
-    ModeError {
+    Mode {
         expected_mode: StreamMode,
         actual_mode: StreamMode,
     },
     #[snafu(display("The message terminated unexpectedly."))]
-    UnexpectedEndOfMessageError,
+    UnexpectedEndOfMessage,
 }
 
 pub struct BdReader {
@@ -74,7 +74,7 @@ impl BdReader {
             }
         );
 
-        if count <= 0 {
+        if count == 0 {
             return Ok(());
         }
 
@@ -160,13 +160,13 @@ impl BdReader {
         }
 
         if self.mode != StreamMode::BitMode {
-            return Ok(BufferDataType::from_value(self.cursor.read_u8()?)?);
+            return BufferDataType::from_value(self.cursor.read_u8()?);
         }
 
         let mut temp_buffer = [0u8];
         self.read_bits(&mut temp_buffer, 5)?;
 
-        Ok(BufferDataType::from_value(temp_buffer[0])?)
+        BufferDataType::from_value(temp_buffer[0])
     }
 
     fn next_data_type(&mut self) -> Result<BufferDataType, Box<dyn Error>> {
@@ -566,8 +566,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_i8()?);
@@ -596,8 +595,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_u8()?);
@@ -626,8 +624,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_i16::<LittleEndian>()?);
@@ -656,8 +653,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_u16::<LittleEndian>()?);
@@ -686,8 +682,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_i32::<LittleEndian>()?);
@@ -716,8 +711,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_u32::<LittleEndian>()?);
@@ -746,8 +740,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_i64::<LittleEndian>()?);
@@ -776,8 +769,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_u64::<LittleEndian>()?);
@@ -806,8 +798,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_f32::<LittleEndian>()?);
@@ -836,8 +827,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             result.push(self.cursor.read_f64::<LittleEndian>()?);
@@ -866,8 +856,7 @@ impl BdReader {
         );
 
         let num_elements = self.read_array_num_elements()?;
-        let mut result = Vec::new();
-        result.reserve(num_elements);
+        let mut result = Vec::with_capacity(num_elements);
 
         for _ in 0..num_elements {
             let mut buf = Vec::new();
@@ -904,8 +893,7 @@ impl BdReader {
         }
 
         let blob_size = self.read_u32()? as usize;
-        let mut blob = Vec::new();
-        blob.resize(blob_size, 0u8);
+        let mut blob = vec![0; blob_size];
         ensure!(
             self.cursor.read(&mut blob[0..blob_size])? == blob_size,
             UnexpectedEndOfMessageSnafu {}
@@ -1060,14 +1048,14 @@ mod tests {
         let mut reader = BdReader::new(vec![0x65]);
         reader.set_mode(StreamMode::BitMode);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
     }
 
     #[test]
@@ -1075,15 +1063,15 @@ mod tests {
         let mut reader = BdReader::new(vec![0x00, 0x01, 0x01, 0x00, 0x00, 0x02, 0xFF, 0xBB, 0x00]);
         reader.set_mode(StreamMode::ByteMode);
 
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
     }
 
     #[test]
@@ -1091,8 +1079,8 @@ mod tests {
         let mut reader = BdReader::new(vec![0x00, 0x01]);
         reader.set_mode(StreamMode::ByteMode);
 
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
         assert!(reader.read_bool().is_err());
     }
@@ -1102,14 +1090,14 @@ mod tests {
         let mut reader = BdReader::new(vec![0x55]);
         reader.set_mode(StreamMode::BitMode);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
         assert!(reader.read_bool().is_err());
     }
@@ -1120,8 +1108,8 @@ mod tests {
         reader.set_mode(StreamMode::BitMode);
         reader.set_type_checked(true);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
     }
 
@@ -1131,8 +1119,8 @@ mod tests {
         reader.set_mode(StreamMode::ByteMode);
         reader.set_type_checked(true);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
     }
 

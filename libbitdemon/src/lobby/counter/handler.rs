@@ -34,10 +34,8 @@ impl LobbyHandler for CounterHandler {
         let maybe_task_id = CounterTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(
-                TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
-                    .to_response()?,
-            );
+            return TaskReply::with_only_error_code(BdErrorCode::NoError, task_id_value)
+                .to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -76,10 +74,8 @@ impl CounterHandler {
         self.counter_service
             .increment_counters(session, increments)?;
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, CounterTaskId::IncrementCounters)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, CounterTaskId::IncrementCounters)
+            .to_response()
     }
 
     fn get_counter_totals(
@@ -96,9 +92,7 @@ impl CounterHandler {
         self.counter_service
             .get_counter_totals(session, counter_ids)?;
 
-        Ok(
-            TaskReply::with_only_error_code(BdErrorCode::NoError, CounterTaskId::GetCounterTotals)
-                .to_response()?,
-        )
+        TaskReply::with_only_error_code(BdErrorCode::NoError, CounterTaskId::GetCounterTotals)
+            .to_response()
     }
 }

@@ -39,7 +39,7 @@ impl LobbyHandler for TitleUtilitiesHandler {
         let maybe_task_id = TitleUtilitiesTaskId::from_u8(task_id_value);
         if maybe_task_id.is_none() {
             warn!("Client called unknown task {task_id_value}");
-            return Ok(TaskReply::with_only_error_code(NoError, task_id_value).to_response()?);
+            return TaskReply::with_only_error_code(NoError, task_id_value).to_response();
         }
         let task_id = maybe_task_id.unwrap();
 
@@ -59,6 +59,12 @@ impl LobbyHandler for TitleUtilitiesHandler {
     }
 }
 
+impl Default for TitleUtilitiesHandler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TitleUtilitiesHandler {
     pub fn new() -> TitleUtilitiesHandler {
         TitleUtilitiesHandler {}
@@ -70,9 +76,6 @@ impl TitleUtilitiesHandler {
             value: (now % (u32::MAX as i64)) as u32,
         });
 
-        Ok(
-            TaskReply::with_results(TitleUtilitiesTaskId::GetServerTime, vec![result])
-                .to_response()?,
-        )
+        TaskReply::with_results(TitleUtilitiesTaskId::GetServerTime, vec![result]).to_response()
     }
 }
