@@ -254,6 +254,18 @@ impl BdReader {
         Ok(self.next_data_type()?.eq_non_array(BdDataType::BlobType))
     }
 
+    pub fn remaining_bytes(&self) -> Result<usize, Box<dyn Error>> {
+        ensure!(
+            self.mode == StreamMode::ByteMode,
+            ModeSnafu {
+                actual_mode: self.mode,
+                expected_mode: StreamMode::ByteMode
+            }
+        );
+
+        Ok(self.cursor.get_ref().len() - self.cursor.position() as usize)
+    }
+
     fn read_array_num_elements(&mut self) -> Result<usize, Box<dyn Error>> {
         // Always type checked
         let total_size_type = self.read_data_type()?;
