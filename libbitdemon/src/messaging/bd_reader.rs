@@ -1048,14 +1048,14 @@ mod tests {
         let mut reader = BdReader::new(vec![0x65]);
         reader.set_mode(StreamMode::BitMode);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
     }
 
     #[test]
@@ -1063,15 +1063,15 @@ mod tests {
         let mut reader = BdReader::new(vec![0x00, 0x01, 0x01, 0x00, 0x00, 0x02, 0xFF, 0xBB, 0x00]);
         reader.set_mode(StreamMode::ByteMode);
 
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
     }
 
     #[test]
@@ -1079,8 +1079,8 @@ mod tests {
         let mut reader = BdReader::new(vec![0x00, 0x01]);
         reader.set_mode(StreamMode::ByteMode);
 
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
         assert!(reader.read_bool().is_err());
     }
@@ -1090,14 +1090,14 @@ mod tests {
         let mut reader = BdReader::new(vec![0x55]);
         reader.set_mode(StreamMode::BitMode);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
         assert!(reader.read_bool().is_err());
     }
@@ -1108,8 +1108,8 @@ mod tests {
         reader.set_mode(StreamMode::BitMode);
         reader.set_type_checked(true);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
     }
 
@@ -1119,8 +1119,8 @@ mod tests {
         reader.set_mode(StreamMode::ByteMode);
         reader.set_type_checked(true);
 
-        assert_eq!(reader.read_bool().unwrap(), true);
-        assert_eq!(reader.read_bool().unwrap(), false);
+        assert!(reader.read_bool().unwrap());
+        assert!(!reader.read_bool().unwrap());
         assert!(reader.read_bool().is_err());
     }
 
