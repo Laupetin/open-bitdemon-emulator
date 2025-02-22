@@ -5,6 +5,7 @@ pub mod dml;
 pub mod group;
 pub mod league;
 mod lsg;
+pub mod profile;
 mod response;
 pub mod rich_presence;
 pub mod storage;
@@ -34,7 +35,7 @@ pub enum LobbyServiceId {
     Stats = 4,
     Messaging = 6,
     LobbyService = 7,
-    Profiles = 8,
+    Profile = 8,
     Friends = 9,
     Storage = 10,
     Messaging2 = 11,
