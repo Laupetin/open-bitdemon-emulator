@@ -1,5 +1,6 @@
 pub mod anti_cheat;
 pub mod bandwidth;
+pub mod content_streaming;
 pub mod counter;
 pub mod dml;
 pub mod group;
