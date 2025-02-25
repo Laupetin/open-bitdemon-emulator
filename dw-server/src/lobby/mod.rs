@@ -1,5 +1,6 @@
 ﻿mod content_streaming;
 mod counter;
+mod env;
 mod group;
 mod profile;
 mod rich_presence;
@@ -11,29 +12,111 @@ use crate::lobby::group::create_group_handler;
 use crate::lobby::profile::create_profile_handler;
 use crate::lobby::rich_presence::create_rich_presence_handler;
 use crate::lobby::storage::create_storage_handler;
+use axum::Router;
 use bitdemon::lobby::anti_cheat::AntiCheatHandler;
 use bitdemon::lobby::bandwidth::BandwidthHandler;
 use bitdemon::lobby::dml::DmlHandler;
 use bitdemon::lobby::league::LeagueHandler;
 use bitdemon::lobby::title_utilities::TitleUtilitiesHandler;
-use bitdemon::lobby::LobbyServer;
 use bitdemon::lobby::LobbyServiceId::{
-    Anticheat, BandwidthTest, ContentStreaming, Counter, Dml, Group, League, Profile, RichPresence,
-    Storage, TitleUtilities,
+    Anticheat, BandwidthTest, Counter, Dml, Group, League, Profile, RichPresence, Storage,
+    TitleUtilities,
 };
+use bitdemon::lobby::{LobbyServer, LobbyServiceId, ThreadSafeLobbyHandler};
 use bitdemon::networking::session_manager::SessionManager;
+use std::cell::Cell;
 use std::sync::Arc;
 
-pub fn configure_lobby_server(lobby_server: &LobbyServer, session_manager: Arc<SessionManager>) {
-    lobby_server.add_service(Anticheat, Arc::new(AntiCheatHandler::new()));
-    lobby_server.add_service(BandwidthTest, Arc::new(BandwidthHandler::new()));
-    lobby_server.add_service(ContentStreaming, create_content_streaming_handler());
-    lobby_server.add_service(Counter, create_counter_handler());
-    lobby_server.add_service(Dml, Arc::new(DmlHandler::new()));
-    lobby_server.add_service(Group, create_group_handler(session_manager.clone()));
-    lobby_server.add_service(League, Arc::new(LeagueHandler::new()));
-    lobby_server.add_service(Profile, create_profile_handler());
-    lobby_server.add_service(RichPresence, create_rich_presence_handler(session_manager));
-    lobby_server.add_service(Storage, create_storage_handler());
-    lobby_server.add_service(TitleUtilities, Arc::new(TitleUtilitiesHandler::new()));
+pub fn configure_lobby_server(
+    lobby_server: &LobbyServer,
+    session_manager: Arc<SessionManager>,
+) -> Router {
+    let mut configurer = DwServerConfigurer::new(lobby_server);
+
+    configurer.direct_config(Anticheat, Arc::new(AntiCheatHandler::new()));
+    configurer.direct_config(BandwidthTest, Arc::new(BandwidthHandler::new()));
+
+    configurer.full_config(create_content_streaming_handler());
+
+    configurer.direct_config(Counter, create_counter_handler());
+    configurer.direct_config(Dml, Arc::new(DmlHandler::new()));
+    configurer.direct_config(Group, create_group_handler(session_manager.clone()));
+    configurer.direct_config(League, Arc::new(LeagueHandler::new()));
+    configurer.direct_config(Profile, create_profile_handler());
+    configurer.direct_config(RichPresence, create_rich_presence_handler(session_manager));
+    configurer.direct_config(Storage, create_storage_handler());
+    configurer.direct_config(TitleUtilities, Arc::new(TitleUtilitiesHandler::new()));
+
+    configurer.into()
+}
+
+pub struct ConfiguredEnvironment {
+    service_id: LobbyServiceId,
+    handler: Arc<ThreadSafeLobbyHandler>,
+    pub_router: Option<Router>,
+}
+
+impl ConfiguredEnvironment {
+    pub fn new(
+        service_id: LobbyServiceId,
+        handler: Arc<ThreadSafeLobbyHandler>,
+    ) -> ConfiguredEnvironment {
+        ConfiguredEnvironment {
+            service_id,
+            handler,
+            pub_router: None,
+        }
+    }
+
+    pub fn with_pub_router(mut self, router: Router) -> Self {
+        self.pub_router = Some(router);
+
+        self
+    }
+
+    pub fn configure_lobby_server(self, lobby_server: &LobbyServer) {
+        lobby_server.add_service(self.service_id, self.handler);
+    }
+
+    pub fn configure_pub_router(&mut self, mut pub_router: Router) -> Router {
+        if let Some(self_router) = self.pub_router.take() {
+            pub_router = pub_router.merge(self_router);
+        }
+
+        pub_router
+    }
+}
+
+struct DwServerConfigurer<'a> {
+    lobby_server: &'a LobbyServer,
+    pub_router: Cell<Router>,
+}
+
+impl<'a> DwServerConfigurer<'a> {
+    fn new(lobby_server: &'a LobbyServer) -> Self {
+        DwServerConfigurer {
+            lobby_server,
+            pub_router: Cell::new(Router::new()),
+        }
+    }
+
+    fn direct_config(
+        &self,
+        lobby_service_id: LobbyServiceId,
+        handler: Arc<ThreadSafeLobbyHandler>,
+    ) {
+        self.lobby_server.add_service(lobby_service_id, handler);
+    }
+
+    fn full_config(&mut self, mut env: ConfiguredEnvironment) {
+        self.pub_router
+            .set(env.configure_pub_router(self.pub_router.take()));
+        env.configure_lobby_server(self.lobby_server)
+    }
+}
+
+impl<'a> From<DwServerConfigurer<'a>> for Router {
+    fn from(value: DwServerConfigurer<'a>) -> Self {
+        value.pub_router.take()
+    }
 }

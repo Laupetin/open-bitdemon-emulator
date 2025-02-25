@@ -5,9 +5,11 @@ edition = "2021"
 license = "AGPL-3"
 
 [dependencies]
+axum = "0.8.1"
 env_logger = "0.11.6"
 libbitdemon = { path = "../libbitdemon" }
 rusqlite = { version = "0.34.0", features = ["bundled", "blob"] }
+tokio = { version = "1.43.0", features = ["full"] }
 
 chrono.workspace = true
 log.workspace = true
