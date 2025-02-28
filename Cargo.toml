@@ -6,7 +6,7 @@ members = [
 resolver = "1"
 
 [workspace.dependencies]
-chrono = "0.4.39"
+chrono = "0.4.40"
 log = "0.4.26"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
