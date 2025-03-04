@@ -1,8 +1,10 @@
 use crate::lobby::content_streaming::publisher_file::DwPublisherContentStreamingService;
+use crate::lobby::content_streaming::user_file::DwUserContentStreamingService;
+use axum::body::{Body, Bytes};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::Router;
 use axum_extra::response::FileStream;
 use bitdemon::domain::title::Title;
@@ -13,27 +15,38 @@ use tokio::fs::File;
 use tokio_util::io::ReaderStream;
 
 pub fn create_content_streaming_router(
+    user_service: Arc<DwUserContentStreamingService>,
     publisher_service: Arc<DwPublisherContentStreamingService>,
 ) -> Router {
-    Router::new()
+    let publisher_router = Router::new()
+        .route("/{title}/{stream_id}", get(retrieve_publisher_file))
+        .with_state(publisher_service);
+
+    let user_router: Router = Router::new()
         .route(
-            "/content/publisher/{title}/{file_id}",
-            get(retrieve_publisher_file),
+            "/{title}/{stream_id}",
+            get(retrieve_user_file)
+                .put(upload_user_file)
+                .delete(delete_user_file),
         )
-        .with_state(publisher_service)
+        .with_state(user_service);
+
+    Router::new()
+        .nest("/content/publisher", publisher_router)
+        .nest("/content/user", user_router)
 }
 
 async fn retrieve_publisher_file(
-    Path((title_num, file_id)): Path<(u32, u64)>,
+    Path((title_num, stream_id)): Path<(u32, u64)>,
     State(publisher_service): State<Arc<DwPublisherContentStreamingService>>,
 ) -> Result<Response, (StatusCode, String)> {
-    info!("Streaming publisher file for {title_num} and {file_id}");
+    info!("Streaming publisher file for {title_num} and {stream_id}");
 
     let title = Title::from_u32(title_num)
         .ok_or_else(|| (StatusCode::BAD_REQUEST, "Illegal title num".to_string()))?;
 
     let stream = publisher_service
-        .stream_by_id(title, file_id)
+        .stream_by_id(title, stream_id)
         .ok_or_else(|| (StatusCode::NOT_FOUND, "Stream not found".to_string()))?;
 
     let file_name = format!("stream/publisher/{title_num}/{}", stream.filename);
@@ -45,4 +58,53 @@ async fn retrieve_publisher_file(
     let file_stream_resp = FileStream::new(stream).file_name(file_name);
 
     Ok(file_stream_resp.into_response())
+}
+
+async fn retrieve_user_file(
+    State(user_service): State<Arc<DwUserContentStreamingService>>,
+    Path((title_num, stream_id)): Path<(u32, u64)>,
+) -> Result<Response, (StatusCode, String)> {
+    info!("Streaming user file for {title_num} and {stream_id}");
+
+    let title = Title::from_u32(title_num)
+        .ok_or_else(|| (StatusCode::BAD_REQUEST, "Illegal title num".to_string()))?;
+
+    let stream = user_service
+        .stream_by_id(title, stream_id)
+        .ok_or_else(|| (StatusCode::NOT_FOUND, "Stream not found".to_string()))?;
+
+    Ok(Response::new(Body::from(stream)))
+}
+
+async fn upload_user_file(
+    State(user_service): State<Arc<DwUserContentStreamingService>>,
+    Path((title_num, stream_id)): Path<(u32, u64)>,
+    body: Bytes,
+) -> Result<(), StatusCode> {
+    info!("Uploading user stream for {title_num} and {stream_id}");
+
+    let title = Title::from_u32(title_num).ok_or_else(|| StatusCode::BAD_REQUEST)?;
+
+    let data = body.to_vec();
+
+    if user_service.set_stream_data(title, stream_id, data) {
+        Ok(())
+    } else {
+        Err(StatusCode::BAD_REQUEST)
+    }
+}
+
+async fn delete_user_file(
+    State(user_service): State<Arc<DwUserContentStreamingService>>,
+    Path((title_num, stream_id)): Path<(u32, u64)>,
+) -> Result<(), StatusCode> {
+    info!("Uploading user stream for {title_num} and {stream_id}");
+
+    let title = Title::from_u32(title_num).ok_or_else(|| StatusCode::BAD_REQUEST)?;
+
+    if user_service.delete_stream(title, stream_id) {
+        Ok(())
+    } else {
+        Err(StatusCode::BAD_REQUEST)
+    }
 }

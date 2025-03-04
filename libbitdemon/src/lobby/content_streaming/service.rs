@@ -48,14 +48,14 @@ pub struct StreamInfo {
 }
 
 /// Describes a tag that can be set on a stream.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StreamTag {
     pub primary: u64,
     pub secondary: u64,
 }
 
 /// The request of a user to create a stream.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StreamCreationRequest {
     /// The filename of the stream that the user wants to create.
     pub filename: String,
@@ -87,7 +87,7 @@ pub struct StreamUrl {
 }
 
 /// Contains data to finish the creation of a stream.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct UploadedStream {
     /// The filename of the stream that the user uploaded.
     pub filename: String,
@@ -140,7 +140,7 @@ pub trait UserContentStreamingService {
     fn get_user_streams_by_id(
         &self,
         session: &BdSession,
-        file_id: &[u64],
+        file_ids: &[u64],
     ) -> Result<Vec<StreamInfo>, ContentStreamingServiceError>;
 
     /// TODO: docs

@@ -12,14 +12,15 @@ mod publisher_file;
 mod user_file;
 
 pub fn create_content_streaming_handler() -> ConfiguredEnvironment {
+    let user_service = Arc::new(DwUserContentStreamingService::new());
     let publisher_service = Arc::new(DwPublisherContentStreamingService::new());
 
-    let router = create_content_streaming_router(publisher_service.clone());
+    let router = create_content_streaming_router(user_service.clone(), publisher_service.clone());
 
     ConfiguredEnvironment::new(
         LobbyServiceId::ContentStreaming,
         Arc::new(ContentStreamingHandler::new(
-            Arc::new(DwUserContentStreamingService::new()),
+            user_service,
             publisher_service,
         )),
     )
