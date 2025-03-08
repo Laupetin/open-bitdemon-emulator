@@ -3,7 +3,6 @@ use bitdemon::lobby::content_streaming::{CategoryId, StreamSlot, StreamTag};
 use chrono::Utc;
 use log::info;
 use num_traits::ToPrimitive;
-use rusqlite::fallible_iterator::FallibleIterator;
 use rusqlite::types::Value;
 use rusqlite::{Connection, DropBehavior, Row};
 use std::cell::RefCell;

@@ -208,8 +208,8 @@ impl DwUserContentStreamingService {
         StreamUrl {
             stream_id,
             url: format!("http://localhost:3000/content/user/{title_num}/{stream_id}"),
-            server_type: 0,
-            server_index: "".to_string(),
+            server_type: 1,
+            server_index: "asdf".to_string(),
         }
     }
 }

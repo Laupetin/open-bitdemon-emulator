@@ -4,7 +4,7 @@ use axum::body::{Body, Bytes};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::routing::{get, post};
+use axum::routing::get;
 use axum::Router;
 use axum_extra::response::FileStream;
 use bitdemon::domain::title::Title;
@@ -83,7 +83,7 @@ async fn upload_user_file(
 ) -> Result<(), StatusCode> {
     info!("Uploading user stream for {title_num} and {stream_id}");
 
-    let title = Title::from_u32(title_num).ok_or_else(|| StatusCode::BAD_REQUEST)?;
+    let title = Title::from_u32(title_num).ok_or(StatusCode::BAD_REQUEST)?;
 
     let data = body.to_vec();
 
@@ -100,7 +100,7 @@ async fn delete_user_file(
 ) -> Result<(), StatusCode> {
     info!("Uploading user stream for {title_num} and {stream_id}");
 
-    let title = Title::from_u32(title_num).ok_or_else(|| StatusCode::BAD_REQUEST)?;
+    let title = Title::from_u32(title_num).ok_or(StatusCode::BAD_REQUEST)?;
 
     if user_service.delete_stream(title, stream_id) {
         Ok(())
