@@ -7,7 +7,7 @@ license = "AGPL-3"
 [dependencies]
 env_logger = "0.11.6"
 libbitdemon = { path = "../libbitdemon" }
-rusqlite = { version = "0.33.0", features = ["bundled", "blob"] }
+rusqlite = { version = "0.34.0", features = ["bundled", "blob"] }
 
 chrono.workspace = true
 log.workspace = true
