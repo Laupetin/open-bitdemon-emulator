@@ -62,7 +62,7 @@ impl PublisherStorageService for DwPublisherStorageService {
             return Ok(ResultSlice::new(Vec::new(), item_offset));
         }
 
-        let file_info = dir
+        let file_info: Vec<StorageFileInfo> = dir
             .unwrap()
             .filter(|entry| entry.is_ok())
             .skip(item_offset)
@@ -72,7 +72,11 @@ impl PublisherStorageService for DwPublisherStorageService {
             .take(item_count)
             .collect();
 
-        Ok(ResultSlice::new(file_info, item_offset))
+        if !file_info.is_empty() {
+            Ok(ResultSlice::new(file_info, item_offset))
+        } else {
+            Err(StorageServiceError::StorageFileNotFoundError)
+        }
     }
 
     fn filter_publisher_files(
@@ -93,7 +97,7 @@ impl PublisherStorageService for DwPublisherStorageService {
             return Ok(ResultSlice::new(Vec::new(), item_offset));
         }
 
-        let file_info = dir
+        let file_info: Vec<StorageFileInfo> = dir
             .unwrap()
             .filter(|entry| entry.is_ok())
             .filter(|entry| {
@@ -112,7 +116,11 @@ impl PublisherStorageService for DwPublisherStorageService {
             .take(item_count)
             .collect();
 
-        Ok(ResultSlice::new(file_info, item_offset))
+        if !file_info.is_empty() {
+            Ok(ResultSlice::new(file_info, item_offset))
+        } else {
+            Err(StorageServiceError::StorageFileNotFoundError)
+        }
     }
 }
 

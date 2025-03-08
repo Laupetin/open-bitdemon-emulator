@@ -2,5 +2,5 @@
 mod result;
 mod service;
 
-pub use handler::StorageHandler;
+pub use handler::ContentStreamingHandler;
 pub use service::*;

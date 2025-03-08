@@ -3,6 +3,7 @@ mod log;
 
 use crate::lobby::configure_lobby_server;
 use crate::log::{initialize_log, log_session_id};
+use ::log::info;
 use bitdemon::auth::auth_server::AuthServer;
 use bitdemon::auth::key_store::InMemoryKeyStore;
 use bitdemon::lobby::LobbyServer;
@@ -13,7 +14,8 @@ use std::sync::Arc;
 const AUTH_SERVER_PORT: u16 = 3075;
 const LOBBY_SERVER_PORT: u16 = 3074;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     initialize_log();
 
     let auth_session_manager = Arc::new(SessionManager::new());
@@ -43,11 +45,16 @@ fn main() {
     let auth_server = Arc::new(AuthServer::new(key_store.clone()));
     let lobby_server = Arc::new(LobbyServer::new(key_store.clone()));
 
-    configure_lobby_server(&lobby_server, lobby_session_manager);
+    let lobby_router = configure_lobby_server(&lobby_server, lobby_session_manager);
 
     let auth_join = auth_socket.run_async(auth_server);
     let lobby_join = lobby_socket.run_async(lobby_server);
 
+    info!("Running pub http server on port 3000");
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let http_promise = axum::serve(listener, lobby_router);
+
+    http_promise.await.unwrap();
     auth_join.join().unwrap().unwrap();
     lobby_join.join().unwrap().unwrap();
 }
