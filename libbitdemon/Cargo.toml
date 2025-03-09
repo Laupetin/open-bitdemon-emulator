@@ -13,7 +13,6 @@ byteorder = "1.5.0"
 cbc = "0.1.2"
 des = "0.8.1"
 hmac = "0.12.1"
-rand = "0.9.0"
 sha1 = "0.10.6"
 tiger = "0.2.1"
 
@@ -21,4 +20,5 @@ chrono.workspace = true
 log.workspace = true
 num-derive.workspace = true
 num-traits.workspace = true
+rand.workspace = true
 snafu.workspace = true

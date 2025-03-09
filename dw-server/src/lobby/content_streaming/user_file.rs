@@ -10,11 +10,43 @@ use bitdemon::lobby::content_streaming::{
     UploadedStream, UserContentStreamingService,
 };
 use bitdemon::networking::bd_session::BdSession;
+use chrono::Utc;
+use jsonwebtoken::{encode, DecodingKey, EncodingKey, Header};
 use log::info;
 use num_traits::ToPrimitive;
+use rand::prelude::StdRng;
+use rand::{RngCore, SeedableRng};
+use serde::{Deserialize, Serialize};
 
-pub struct DwUserContentStreamingService {}
+#[derive(Debug, Serialize, Deserialize, PartialOrd, PartialEq)]
+pub enum UserFileClaimOperation {
+    Stream,
+    Create,
+    Delete,
+}
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserFileClaims {
+    /// Expiration time (as UTC timestamp)
+    pub exp: i64,
+    /// Issued at (as UTC timestamp)
+    pub iat: i64,
+    /// Subject (whom token refers to)
+    pub sub: String,
+    /// ID of the title the operation is for
+    pub stream_title: u32,
+    /// ID of the file the operation is for
+    pub stream_id: u64,
+    /// Operation that is granted for the file
+    pub stream_operation: UserFileClaimOperation,
+}
+
+pub struct DwUserContentStreamingService {
+    encoding_key: EncodingKey,
+    pub decoding_key: DecodingKey,
+}
+
+const CLAIM_LIFETIME_IN_SECONDS: i64 = 5 * 60; // 5min
 const MAX_FILENAME_LENGTH: usize = 260;
 const MAX_USER_FILE_SIZE: usize = 50_000; // 50KB
 const MAX_METADATA_SIZE: usize = 50_000; // 50KB
@@ -34,7 +66,7 @@ impl UserContentStreamingService for DwUserContentStreamingService {
 
         let res: Vec<StreamInfo> = get_streams_by_ids(authentication.title, file_ids)
             .into_iter()
-            .map(|persisted_stream| self.build_get_url(persisted_stream))
+            .map(|persisted_stream| self.build_get_url(authentication.user_id, persisted_stream))
             .collect();
 
         if !res.is_empty() {
@@ -70,7 +102,7 @@ impl UserContentStreamingService for DwUserContentStreamingService {
 
         let res: Vec<StreamInfo> = res
             .into_iter()
-            .map(|persisted_stream| self.build_get_url(persisted_stream))
+            .map(|persisted_stream| self.build_get_url(authentication.user_id, persisted_stream))
             .collect();
 
         Ok(ResultSlice::with_total_count(res, item_offset, total))
@@ -117,7 +149,12 @@ impl UserContentStreamingService for DwUserContentStreamingService {
 
         record_user_name(authentication.user_id, authentication.username.as_str());
 
-        Ok(self.build_stream_url(authentication.title, stream_id))
+        Ok(self.build_stream_url(
+            authentication.user_id,
+            authentication.title,
+            stream_id,
+            UserFileClaimOperation::Create,
+        ))
     }
 
     fn finish_stream_upload(
@@ -157,14 +194,31 @@ impl UserContentStreamingService for DwUserContentStreamingService {
             .expect("session to be authentication checked");
 
         get_stream_id_for_slot(authentication.title, authentication.user_id, slot_id)
-            .map(|stream_id| self.build_stream_url(authentication.title, stream_id))
+            .map(|stream_id| {
+                self.build_stream_url(
+                    authentication.user_id,
+                    authentication.title,
+                    stream_id,
+                    UserFileClaimOperation::Delete,
+                )
+            })
             .map_err(|_| ContentStreamingServiceError::NoStreamFound)
     }
 }
 
 impl DwUserContentStreamingService {
     pub fn new() -> DwUserContentStreamingService {
-        DwUserContentStreamingService {}
+        let mut random = [0u8; 128];
+        let mut rng = StdRng::from_os_rng();
+        rng.fill_bytes(&mut random);
+
+        let encoding_key = EncodingKey::from_secret(&random);
+        let decoding_key = DecodingKey::from_secret(&random);
+
+        DwUserContentStreamingService {
+            encoding_key,
+            decoding_key,
+        }
     }
 
     pub fn stream_by_id(&self, title: Title, stream_id: u64) -> Option<Vec<u8>> {
@@ -179,9 +233,16 @@ impl DwUserContentStreamingService {
         delete_db_stream(title, stream_id).is_ok()
     }
 
-    fn build_get_url(&self, persisted_stream: PersistedStreamInfo) -> StreamInfo {
+    fn build_get_url(&self, user_id: u64, persisted_stream: PersistedStreamInfo) -> StreamInfo {
         let id = persisted_stream.id;
         let title_num = persisted_stream.title.to_u32().unwrap();
+
+        let jwt = self.create_jwt(
+            user_id,
+            persisted_stream.title,
+            persisted_stream.id,
+            UserFileClaimOperation::Stream,
+        );
 
         StreamInfo {
             id: persisted_stream.id,
@@ -193,7 +254,7 @@ impl DwUserContentStreamingService {
             modified: persisted_stream.modified,
             owner_id: persisted_stream.owner_id,
             owner_name: persisted_stream.owner_name,
-            url: format!("http://localhost:3000/content/user/{title_num}/{id}"),
+            url: format!("http://localhost:3000/content/user/{title_num}/{id}?authorization={jwt}"),
             metadata: persisted_stream.metadata,
             category: persisted_stream.category,
             slot: persisted_stream.slot,
@@ -203,13 +264,42 @@ impl DwUserContentStreamingService {
         }
     }
 
-    fn build_stream_url(&self, title: Title, stream_id: u64) -> StreamUrl {
+    fn build_stream_url(
+        &self,
+        user_id: u64,
+        title: Title,
+        stream_id: u64,
+        operation: UserFileClaimOperation,
+    ) -> StreamUrl {
         let title_num = title.to_u32().unwrap();
+        let jwt = self.create_jwt(user_id, title, stream_id, operation);
         StreamUrl {
             stream_id,
-            url: format!("http://localhost:3000/content/user/{title_num}/{stream_id}"),
+            url: format!(
+                "http://localhost:3000/content/user/{title_num}/{stream_id}?authorization={jwt}"
+            ),
             server_type: 1,
-            server_index: "asdf".to_string(),
+            server_index: "".to_string(),
         }
+    }
+
+    fn create_jwt(
+        &self,
+        user_id: u64,
+        title: Title,
+        stream_id: u64,
+        stream_operation: UserFileClaimOperation,
+    ) -> String {
+        let now = Utc::now().timestamp();
+        let claims = UserFileClaims {
+            exp: now + CLAIM_LIFETIME_IN_SECONDS,
+            iat: now,
+            sub: format!("{user_id}"),
+            stream_title: title.to_u32().unwrap(),
+            stream_id,
+            stream_operation,
+        };
+
+        encode(&Header::default(), &claims, &self.encoding_key).expect("Jwt creation to work")
     }
 }
