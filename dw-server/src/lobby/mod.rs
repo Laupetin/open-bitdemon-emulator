@@ -5,6 +5,7 @@ mod profile;
 mod rich_presence;
 mod storage;
 
+use crate::config::DwServerConfig;
 use crate::lobby::content_streaming::create_content_streaming_handler;
 use crate::lobby::counter::create_counter_handler;
 use crate::lobby::group::create_group_handler;
@@ -29,13 +30,14 @@ use std::sync::Arc;
 pub fn configure_lobby_server(
     lobby_server: &LobbyServer,
     session_manager: Arc<SessionManager>,
+    config: &DwServerConfig,
 ) -> Router {
     let mut configurer = DwServerConfigurer::new(lobby_server);
 
     configurer.direct_config(Anticheat, Arc::new(AntiCheatHandler::new()));
     configurer.direct_config(BandwidthTest, Arc::new(BandwidthHandler::new()));
 
-    configurer.full_config(create_content_streaming_handler());
+    configurer.full_config(create_content_streaming_handler(config));
 
     configurer.direct_config(Counter, create_counter_handler());
     configurer.direct_config(Dml, Arc::new(DmlHandler::new()));

@@ -1,4 +1,5 @@
-﻿use crate::lobby::content_streaming::db::{
+﻿use crate::config::DwServerConfig;
+use crate::lobby::content_streaming::db::{
     create_empty_stream, delete_db_stream, get_slot_count_for_upload, get_stream_data,
     get_stream_id_for_slot, get_streams_by_ids, get_streams_by_owners, record_user_name,
     set_stream_data, set_stream_metadata, PersistedStreamInfo,
@@ -42,6 +43,8 @@ pub struct UserFileClaims {
 }
 
 pub struct DwUserContentStreamingService {
+    content_server_hostname: String,
+    content_server_port: u16,
     encoding_key: EncodingKey,
     pub decoding_key: DecodingKey,
 }
@@ -207,7 +210,7 @@ impl UserContentStreamingService for DwUserContentStreamingService {
 }
 
 impl DwUserContentStreamingService {
-    pub fn new() -> DwUserContentStreamingService {
+    pub fn new(config: &DwServerConfig) -> DwUserContentStreamingService {
         let mut random = [0u8; 128];
         let mut rng = StdRng::from_os_rng();
         rng.fill_bytes(&mut random);
@@ -216,6 +219,8 @@ impl DwUserContentStreamingService {
         let decoding_key = DecodingKey::from_secret(&random);
 
         DwUserContentStreamingService {
+            content_server_hostname: config.hostname().to_string(),
+            content_server_port: config.content_port(),
             encoding_key,
             decoding_key,
         }
@@ -254,7 +259,10 @@ impl DwUserContentStreamingService {
             modified: persisted_stream.modified,
             owner_id: persisted_stream.owner_id,
             owner_name: persisted_stream.owner_name,
-            url: format!("http://localhost:3000/content/user/{title_num}/{id}?authorization={jwt}"),
+            url: format!(
+                "http://{}:{}/content/user/{title_num}/{id}?authorization={jwt}",
+                self.content_server_hostname, self.content_server_port
+            ),
             metadata: persisted_stream.metadata,
             category: persisted_stream.category,
             slot: persisted_stream.slot,

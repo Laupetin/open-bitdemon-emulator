@@ -1,4 +1,5 @@
-﻿use bitdemon::domain::result_slice::ResultSlice;
+﻿use crate::config::DwServerConfig;
+use bitdemon::domain::result_slice::ResultSlice;
 use bitdemon::domain::title::Title;
 use bitdemon::lobby::content_streaming::{
     ContentStreamingServiceError, PublisherContentStreamingService, StreamInfo,
@@ -15,6 +16,8 @@ use std::sync::{RwLock, RwLockReadGuard};
 use std::time::UNIX_EPOCH;
 
 pub struct DwPublisherContentStreamingService {
+    content_server_hostname: String,
+    content_server_port: u16,
     publisher_streams: RwLock<HashMap<Title, PublisherStreamState>>,
 }
 
@@ -112,10 +115,12 @@ impl PublisherContentStreamingService for DwPublisherContentStreamingService {
 }
 
 impl DwPublisherContentStreamingService {
-    pub fn new() -> DwPublisherContentStreamingService {
+    pub fn new(config: &DwServerConfig) -> DwPublisherContentStreamingService {
         let state_map = HashMap::new();
 
         DwPublisherContentStreamingService {
+            content_server_hostname: config.hostname().to_string(),
+            content_server_port: config.content_port(),
             publisher_streams: RwLock::new(state_map),
         }
     }
@@ -147,9 +152,12 @@ impl DwPublisherContentStreamingService {
         {
             let mut lock = self.publisher_streams.write().unwrap();
             if let Some(write_state) = lock.get_mut(&title) {
-                write_state.refresh_if_necessary();
+                write_state.refresh_if_necessary(self);
             } else {
-                lock.insert(title, PublisherStreamState::create_and_initialize(title));
+                lock.insert(
+                    title,
+                    PublisherStreamState::create_and_initialize(self, title),
+                );
             }
         }
 
@@ -168,7 +176,7 @@ struct PublisherStreamState {
 const STATE_REFRESH_SECONDS: i64 = 60;
 
 impl PublisherStreamState {
-    fn create_and_initialize(title: Title) -> Self {
+    fn create_and_initialize(service: &DwPublisherContentStreamingService, title: Title) -> Self {
         let mut result = PublisherStreamState {
             last_refresh: Utc::now(),
             title,
@@ -176,7 +184,7 @@ impl PublisherStreamState {
             streams: Vec::new(),
         };
 
-        result.refresh();
+        result.refresh(service);
 
         result
     }
@@ -187,21 +195,21 @@ impl PublisherStreamState {
         now.sub(self.last_refresh).num_seconds() > STATE_REFRESH_SECONDS
     }
 
-    fn refresh_if_necessary(&mut self) {
+    fn refresh_if_necessary(&mut self, service: &DwPublisherContentStreamingService) {
         if self.refresh_necessary() {
-            self.refresh();
+            self.refresh(service);
         }
     }
 
-    fn refresh(&mut self) {
+    fn refresh(&mut self, service: &DwPublisherContentStreamingService) {
         let dir_name = format!("stream/publisher/{}", self.title.to_u32().unwrap());
         if let Ok(dir) = fs::read_dir(dir_name) {
             dir.filter_map(|entry| entry.ok())
-                .for_each(|entry| self.handle_entry(entry));
+                .for_each(|entry| self.handle_entry(service, entry));
         }
     }
 
-    fn handle_entry(&mut self, entry: DirEntry) {
+    fn handle_entry(&mut self, service: &DwPublisherContentStreamingService, entry: DirEntry) {
         let metadata = entry.metadata().expect("metadata to be retrievable");
         let filename = entry.file_name().into_string().unwrap();
 
@@ -241,7 +249,10 @@ impl PublisherStreamState {
                     .as_secs() as i64,
                 owner_id: 0,
                 owner_name: "".to_string(),
-                url: format!("http://localhost:3000/content/publisher/{title_num}/{id}"),
+                url: format!(
+                    "http://{}:{}/content/publisher/{title_num}/{id}",
+                    service.content_server_hostname, service.content_server_port
+                ),
                 metadata: vec![],
                 category: 0,
                 slot: 0,
