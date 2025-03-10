@@ -136,14 +136,23 @@ pub type ThreadSafeUserContentStreamingService = dyn UserContentStreamingService
 /// In case it is public, it can also be accessed by other users.
 /// Users can create, read and delete files bound to their own user id.
 pub trait UserContentStreamingService {
-    /// TODO: docs
+    /// Retrieves info for streams with specified IDs.
+    /// A list of all found stream infos should be found unless no stream could be found.
+    /// In that case, a [NoStreamFound](ContentStreamingServiceError::NoStreamFound) error should be returned.
+    ///
+    /// The specified url in the info will be called using a http `GET` request in case the user decides to stream the data.
     fn get_user_streams_by_id(
         &self,
         session: &BdSession,
         file_ids: &[u64],
     ) -> Result<Vec<StreamInfo>, ContentStreamingServiceError>;
 
-    /// TODO: docs
+    /// Retrieves info for streams of a specified user group.
+    /// The returned streams must have a modification date that is newer or equal than `min_date_time`.
+    /// They must be categorized with the specified category.
+    /// The returned result slice should have the specified offset and count.
+    ///
+    /// The specified url in the info will be called using a http `GET` request in case the user decides to stream the data.
     fn list_streams_of_users(
         &self,
         session: &BdSession,
@@ -154,21 +163,30 @@ pub trait UserContentStreamingService {
         item_count: usize,
     ) -> Result<ResultSlice<StreamInfo>, ContentStreamingServiceError>;
 
-    /// TODO: docs
+    /// A user requested to upload a new stream.
+    /// The data that the user specified for the upload is specified in `request_data`.
+    /// The service is expected to return an url to which the user can send the stream data.
+    ///
+    /// The data will be sent to the specified http endpoint using the `PUT` request method.
     fn request_stream_upload(
         &self,
         session: &BdSession,
         request_data: StreamCreationRequest,
     ) -> Result<StreamUrl, ContentStreamingServiceError>;
 
-    /// TODO: docs
+    /// A user has successfully uploaded a new stream to a previously requested stream upload.
+    /// The user sends complementary data to finish the stream creation process.
+    /// The service is expected to return the ID of the newly created file.
     fn finish_stream_upload(
         &self,
         session: &BdSession,
         uploaded_file: UploadedStream,
     ) -> Result<u64, ContentStreamingServiceError>;
 
-    /// TODO: docs
+    /// A user requested to delete an existing stream that he previously uploaded.
+    /// The service is expected to return an url the user can call to delete the stream.
+    ///
+    /// A request to the specified http endpoint will be made using the `DELETE` request method.
     fn request_stream_deletion(
         &self,
         session: &BdSession,
@@ -185,14 +203,22 @@ pub type ThreadSafePublisherContentStreamingService =
 /// They can be read by any user that is authenticated for this title.
 /// Users cannot create or overwrite publisher files.
 pub trait PublisherContentStreamingService {
-    /// TODO: docs
+    /// Retrieves info for a publisher stream with specified ID.
+    /// If the stream could not be found, a [NoStreamFound](ContentStreamingServiceError::NoStreamFound) error should be returned.
+    ///
+    /// The specified url in the info will be called using a http `GET` request in case the user decides to stream the data.
     fn get_publisher_stream_by_id(
         &self,
         session: &BdSession,
         file_id: u64,
     ) -> Result<StreamInfo, ContentStreamingServiceError>;
 
-    /// TODO: docs
+    /// Retrieves info for publisher streams.
+    /// The returned streams must have a modification date that is newer or equal than `min_date_time`.
+    /// They must be categorized with the specified category.
+    /// The returned result slice should have the specified offset and count.
+    ///
+    /// The specified url in the info will be called using a http `GET` request in case the user decides to stream the data.
     fn list_publisher_streams(
         &self,
         session: &BdSession,
@@ -202,7 +228,12 @@ pub trait PublisherContentStreamingService {
         item_count: usize,
     ) -> Result<ResultSlice<StreamInfo>, ContentStreamingServiceError>;
 
-    /// TODO: docs
+    /// Retrieves info for publisher streams using a filter value that any filename of a stream must begin with.
+    /// The returned streams must have a modification date that is newer or equal than `min_date_time`.
+    /// They must be categorized with the specified category.
+    /// The returned result slice should have the specified offset and count.
+    ///
+    /// The specified url in the info will be called using a http `GET` request in case the user decides to stream the data.
     fn filter_publisher_streams(
         &self,
         session: &BdSession,
