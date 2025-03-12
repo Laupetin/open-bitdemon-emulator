@@ -284,7 +284,8 @@ impl DwUserContentStreamingService {
         StreamUrl {
             stream_id,
             url: format!(
-                "http://localhost:3000/content/user/{title_num}/{stream_id}?authorization={jwt}"
+                "http://{}:{}/content/user/{title_num}/{stream_id}?authorization={jwt}",
+                self.content_server_hostname, self.content_server_port
             ),
             server_type: 1,
             server_index: "".to_string(),
