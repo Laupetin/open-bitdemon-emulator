@@ -156,7 +156,7 @@ const GET_BY_OWNERS_QUERY: &str = "
 SELECT
     u.id,
     u.filename,
-    length(data),
+    if(data IS NOT NULL, length(data), 0),
     u.created_at,
     u.modified_at,
     u.owner_id,
@@ -510,7 +510,7 @@ fn map_persisted_stream_info(row: &Row, title: Title) -> rusqlite::Result<Persis
         modified: row.get(4)?,
         owner_id: row.get(5)?,
         owner_name: row.get(6).unwrap_or_else(|_| "".to_string()),
-        metadata: row.get(7)?,
+        metadata: row.get(7).unwrap_or_else(|_| Vec::new()),
         category: row.get(8)?,
         slot: row.get(9)?,
         tags: Vec::new(),
