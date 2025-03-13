@@ -54,6 +54,12 @@ impl LobbyHandler for VoteRankHandler {
     }
 }
 
+impl Default for VoteRankHandler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VoteRankHandler {
     pub fn new() -> VoteRankHandler {
         VoteRankHandler {}
@@ -115,17 +121,19 @@ impl VoteRankHandler {
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 enum Vote {
-    DISLIKE = 0x0,
-    LIKE = 0xA,
+    Dislike = 0x0,
+    Like = 0xA,
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct RatingInfo {
     entity_id: u64,
     rating: Vote,
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct CategorizedRatingInfo {
     rating_info: RatingInfo,
     category: u16,
