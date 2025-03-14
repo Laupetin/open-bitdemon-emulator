@@ -11,7 +11,7 @@ env_logger = "0.11.6"
 jsonwebtoken = { version = "9.3.1", default-features = false }
 libbitdemon = { path = "../libbitdemon" }
 rusqlite = { version = "0.34.0", features = ["bundled", "blob", "array"] }
-serde = { version = "1.0.218", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 tokio = { version = "1.44.1", features = ["full"] }
 tokio-util = { version = "0.7.13", features = ["io"] }
