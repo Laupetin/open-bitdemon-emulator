@@ -13,6 +13,7 @@ pub mod rich_presence;
 pub mod storage;
 pub mod title_utilities;
 pub mod vote_rank;
+pub mod youtube;
 
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::lobby::lsg::LsgHandler;
