@@ -16,12 +16,13 @@ use axum::Router;
 use bitdemon::lobby::anti_cheat::AntiCheatHandler;
 use bitdemon::lobby::bandwidth::BandwidthHandler;
 use bitdemon::lobby::dml::DmlHandler;
+use bitdemon::lobby::event_log::EventLogHandler;
 use bitdemon::lobby::league::LeagueHandler;
 use bitdemon::lobby::title_utilities::TitleUtilitiesHandler;
 use bitdemon::lobby::vote_rank::VoteRankHandler;
 use bitdemon::lobby::LobbyServiceId::{
-    Anticheat, BandwidthTest, Counter, Dml, Group, League, Profile, RichPresence, Storage,
-    TitleUtilities, VoteRank,
+    Anticheat, BandwidthTest, Counter, Dml, EventLog, Group, League, Profile, RichPresence,
+    Storage, TitleUtilities, VoteRank,
 };
 use bitdemon::lobby::{LobbyServer, LobbyServiceId, ThreadSafeLobbyHandler};
 use bitdemon::networking::session_manager::SessionManager;
@@ -42,6 +43,7 @@ pub fn configure_lobby_server(
 
     configurer.direct_config(Counter, create_counter_handler());
     configurer.direct_config(Dml, Arc::new(DmlHandler::new()));
+    configurer.direct_config(EventLog, Arc::new(EventLogHandler::new()));
     configurer.direct_config(Group, create_group_handler(session_manager.clone()));
     configurer.direct_config(League, Arc::new(LeagueHandler::new()));
     configurer.direct_config(Profile, create_profile_handler());
