@@ -19,10 +19,12 @@ use bitdemon::lobby::dml::DmlHandler;
 use bitdemon::lobby::event_log::EventLogHandler;
 use bitdemon::lobby::league::LeagueHandler;
 use bitdemon::lobby::title_utilities::TitleUtilitiesHandler;
+use bitdemon::lobby::twitch::TwitchHandler;
 use bitdemon::lobby::vote_rank::VoteRankHandler;
+use bitdemon::lobby::youtube::YoutubeHandler;
 use bitdemon::lobby::LobbyServiceId::{
     Anticheat, BandwidthTest, Counter, Dml, EventLog, Group, League, Profile, RichPresence,
-    Storage, TitleUtilities, VoteRank,
+    Storage, TitleUtilities, Twitch, VoteRank, Youtube,
 };
 use bitdemon::lobby::{LobbyServer, LobbyServiceId, ThreadSafeLobbyHandler};
 use bitdemon::networking::session_manager::SessionManager;
@@ -50,7 +52,9 @@ pub fn configure_lobby_server(
     configurer.direct_config(RichPresence, create_rich_presence_handler(session_manager));
     configurer.direct_config(Storage, create_storage_handler());
     configurer.direct_config(TitleUtilities, Arc::new(TitleUtilitiesHandler::new()));
+    configurer.direct_config(Twitch, Arc::new(TwitchHandler::new()));
     configurer.direct_config(VoteRank, Arc::new(VoteRankHandler::new()));
+    configurer.direct_config(Youtube, Arc::new(YoutubeHandler::new()));
 
     configurer.into()
 }

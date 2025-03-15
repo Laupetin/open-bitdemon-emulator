@@ -12,6 +12,7 @@ mod response;
 pub mod rich_presence;
 pub mod storage;
 pub mod title_utilities;
+pub mod twitch;
 pub mod vote_rank;
 pub mod youtube;
 
