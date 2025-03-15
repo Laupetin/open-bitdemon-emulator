@@ -5,6 +5,7 @@ pub mod counter;
 pub mod dml;
 pub mod event_log;
 pub mod group;
+pub mod key_archive;
 pub mod league;
 mod lsg;
 pub mod profile;
