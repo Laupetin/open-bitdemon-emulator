@@ -84,7 +84,7 @@ impl GroupHandler {
             .map(|i| {
                 Box::from(GroupCountResult {
                     group_id: groups[i],
-                    group_count: counts[i].max(u32::MAX as u64) as u32,
+                    group_count: counts[i].min(u32::MAX as u64) as u32,
                 }) as Box<dyn BdSerialize>
             })
             .collect();
