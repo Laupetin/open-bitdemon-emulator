@@ -8,6 +8,7 @@ pub mod group;
 pub mod key_archive;
 pub mod league;
 mod lsg;
+pub mod matchmaking;
 pub mod profile;
 mod response;
 pub mod rich_presence;
