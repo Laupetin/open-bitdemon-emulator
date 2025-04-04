@@ -6,7 +6,7 @@ license = "AGPL-3"
 
 [dependencies]
 axum = "0.8.3"
-axum-extra = { version = "0.10.0", features = ["file-stream"] }
+axum-extra = { version = "0.10.1", features = ["file-stream"] }
 env_logger = "0.11.8"
 jsonwebtoken = { version = "9.3.1", default-features = false }
 libbitdemon = { path = "../libbitdemon" }
