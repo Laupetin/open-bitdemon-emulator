@@ -88,10 +88,7 @@ impl DwRichPresenceService {
     fn remove_rich_presence_for_disconnect(&self, user_id: u64) {
         let mut rich_presences = self.rich_presences.write().unwrap();
         if rich_presences.remove(&user_id).is_some() {
-            info!(
-                "Removed rich presence for user {} due to disconnect",
-                user_id
-            );
+            info!("Removed rich presence for user {user_id} due to disconnect",);
         }
     }
 }
