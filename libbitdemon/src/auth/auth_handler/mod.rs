@@ -54,7 +54,7 @@ pub enum AuthMessageType {
 
 impl AuthMessageType {
     pub fn is_request_code(&self) -> bool {
-        self.to_u8().unwrap() % 2 == 0
+        self.to_u8().unwrap().is_multiple_of(2)
     }
 
     pub fn reply_code(&self) -> AuthMessageType {
