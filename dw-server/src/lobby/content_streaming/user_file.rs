@@ -19,14 +19,14 @@ use rand::prelude::StdRng;
 use rand::{RngCore, SeedableRng};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialOrd, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialOrd, PartialEq)]
 pub enum UserFileClaimOperation {
     Stream,
     Create,
     Delete,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserFileClaims {
     /// Expiration time (as UTC timestamp)
     pub exp: i64,
