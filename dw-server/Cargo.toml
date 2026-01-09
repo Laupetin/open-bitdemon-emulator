@@ -12,7 +12,7 @@ jsonwebtoken = { version = "10.2.0", default-features = false, features = ["rust
 libbitdemon = { path = "../libbitdemon" }
 rusqlite = { version = "0.37.0", features = ["bundled", "blob", "array"] }
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.148"
+serde_json = "1.0.149"
 tokio = { version = "1.49.0", features = ["full"] }
 tokio-util = { version = "0.7.18", features = ["io"] }
 
