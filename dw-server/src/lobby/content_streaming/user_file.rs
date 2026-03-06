@@ -15,8 +15,7 @@ use chrono::Utc;
 use jsonwebtoken::{encode, DecodingKey, EncodingKey, Header};
 use log::info;
 use num_traits::ToPrimitive;
-use rand::prelude::StdRng;
-use rand::{RngCore, SeedableRng};
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialOrd, PartialEq)]
@@ -212,8 +211,7 @@ impl UserContentStreamingService for DwUserContentStreamingService {
 impl DwUserContentStreamingService {
     pub fn new(config: &DwServerConfig) -> DwUserContentStreamingService {
         let mut random = [0u8; 128];
-        let mut rng = StdRng::from_os_rng();
-        rng.fill_bytes(&mut random);
+        rand::rng().fill_bytes(&mut random);
 
         let encoding_key = EncodingKey::from_secret(&random);
         let decoding_key = DecodingKey::from_secret(&random);
