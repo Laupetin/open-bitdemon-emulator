@@ -5,7 +5,7 @@ use des::cipher::BlockSizeUser;
 use des::cipher::KeyIvInit;
 use hmac::digest::core_api::CoreWrapper;
 use hmac::{Hmac, HmacCore, Mac};
-use rand::RngCore;
+use rand::Rng;
 use sha1::Sha1;
 use sha1::{Digest as Sha1Digest, Sha1Core};
 use snafu::Snafu;

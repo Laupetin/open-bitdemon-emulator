@@ -2,7 +2,7 @@ use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyInit};
 use aes::Aes256;
 use cbc::cipher::block_padding::ZeroPadding;
 use log::info;
-use rand::RngCore;
+use rand::Rng;
 use snafu::Snafu;
 use std::error::Error;
 use std::sync::RwLock;
