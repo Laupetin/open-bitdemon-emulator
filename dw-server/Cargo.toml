@@ -7,7 +7,7 @@ license = "AGPL-3"
 [dependencies]
 axum = "0.8.8"
 axum-extra = { version = "0.12.5", features = ["file-stream"] }
-env_logger = "0.11.9"
+env_logger = "0.11.10"
 jsonwebtoken = { version = "10.3.0", default-features = false, features = ["rust_crypto"] }
 libbitdemon = { path = "../libbitdemon" }
 rusqlite = { version = "0.39.0", features = ["bundled", "blob", "array", "fallible_uint"] }
