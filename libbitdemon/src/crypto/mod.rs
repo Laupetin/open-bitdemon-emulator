@@ -1,13 +1,11 @@
-use cbc::cipher::KeyInit;
 use cbc::cipher::{BlockDecryptMut, BlockEncryptMut};
 use des::cipher::block_padding::ZeroPadding;
 use des::cipher::BlockSizeUser;
 use des::cipher::KeyIvInit;
-use hmac::digest::core_api::CoreWrapper;
-use hmac::{Hmac, HmacCore, Mac};
+use hmac::{Hmac, KeyInit, Mac};
 use rand::Rng;
+use sha1::Digest as Sha1Digest;
 use sha1::Sha1;
-use sha1::{Digest as Sha1Digest, Sha1Core};
 use snafu::Snafu;
 use std::error::Error;
 use tiger::Digest as TigerDigest;
@@ -59,8 +57,7 @@ pub fn decrypt_buffer_in_place(
 type HmacSha1 = Hmac<Sha1>;
 
 pub fn calculate_hmac(buf: &[u8], key: &[u8; 24]) -> u32 {
-    let mut hmac = <CoreWrapper<HmacCore<CoreWrapper<Sha1Core>>> as KeyInit>::new_from_slice(key)
-        .expect("HMac accepts session key");
+    let mut hmac = HmacSha1::new_from_slice(key).expect("HMac accepts session key");
     Mac::update(&mut hmac, buf);
     let result = HmacSha1::finalize(hmac);
 
