@@ -1,4 +1,4 @@
-use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyInit};
+use aes::cipher::{BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
 use aes::Aes256;
 use cbc::cipher::block_padding::ZeroPadding;
 use log::info;
@@ -8,9 +8,13 @@ use std::error::Error;
 use std::sync::RwLock;
 
 pub type AesKey = [u8; 32];
+pub type AesIv = [u8; 16];
+type Aes256CbcEnc = cbc::Encryptor<Aes256>;
+type Aes256CbcDec = cbc::Decryptor<Aes256>;
 
 pub struct BackendPrivateKey {
     aes_key: AesKey,
+    aes_iv: AesIv,
 }
 
 #[derive(Debug, Snafu)]
@@ -19,9 +23,9 @@ struct BufferSizeError {}
 
 impl BackendPrivateKey {
     pub fn encrypt_data(&self, buf: &mut [u8]) -> Result<(), Box<dyn Error>> {
-        let cipher = Aes256::new_from_slice(&self.aes_key).unwrap();
+        let cipher = Aes256CbcEnc::new(&self.aes_key.into(), &self.aes_iv.into());
         cipher
-            .encrypt_padded_mut::<ZeroPadding>(buf, buf.len())
+            .encrypt_padded::<ZeroPadding>(buf, buf.len())
             .map(|_| ())
             .map_err(|e| {
                 info!("{e}");
@@ -30,9 +34,9 @@ impl BackendPrivateKey {
     }
 
     pub fn decrypt_data(&self, buf: &mut [u8]) -> Result<(), Box<dyn Error>> {
-        let cipher = Aes256::new_from_slice(&self.aes_key).unwrap();
+        let cipher = Aes256CbcDec::new(&self.aes_key.into(), &self.aes_iv.into());
         cipher
-            .decrypt_padded_mut::<ZeroPadding>(buf)
+            .decrypt_padded::<ZeroPadding>(buf)
             .map(|_| ())
             .map_err(|_| BufferSizeSnafu {}.build().into())
     }
@@ -98,9 +102,12 @@ impl BackendPrivateKeyStorage for InMemoryKeyStore {
         state.key_index = (state.key_index + 1) % IN_MEMORY_KEY_STORAGE_COUNT;
 
         let mut aes_key = [0u8; 32];
+        let mut aes_iv = [0u8; 16];
         rand::rng().fill_bytes(&mut aes_key);
+        rand::rng().fill_bytes(&mut aes_iv);
         let next_key = InMemoryKey {
             aes_key,
+            aes_iv,
             valid_until: now + IN_MEMORY_KEY_LIFESPAN,
         };
 
@@ -126,6 +133,7 @@ impl BackendPrivateKeyStorage for InMemoryKeyStore {
 #[derive(Copy, Clone)]
 struct InMemoryKey {
     aes_key: AesKey,
+    aes_iv: AesIv,
     valid_until: i64,
 }
 
@@ -133,6 +141,7 @@ impl InMemoryKey {
     fn empty() -> InMemoryKey {
         InMemoryKey {
             aes_key: [0; 32],
+            aes_iv: [0; 16],
             valid_until: 0,
         }
     }
@@ -140,6 +149,7 @@ impl InMemoryKey {
     fn export(&self) -> BackendPrivateKey {
         BackendPrivateKey {
             aes_key: self.aes_key,
+            aes_iv: self.aes_iv,
         }
     }
 }
