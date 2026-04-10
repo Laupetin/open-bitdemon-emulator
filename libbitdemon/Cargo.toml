@@ -8,7 +8,7 @@ license = "AGPL-3"
 name = "bitdemon"
 
 [dependencies]
-aes = "0.8.4"
+aes = "0.9.0"
 byteorder = "1.5.0"
 cbc = "0.1.2"
 des = "0.8.1"
