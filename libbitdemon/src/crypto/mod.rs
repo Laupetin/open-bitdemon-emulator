@@ -1,7 +1,6 @@
-use cbc::cipher::{BlockDecryptMut, BlockEncryptMut};
 use des::cipher::block_padding::ZeroPadding;
-use des::cipher::BlockSizeUser;
 use des::cipher::KeyIvInit;
+use des::cipher::{BlockModeDecrypt, BlockModeEncrypt, BlockSizeUser};
 use hmac::{Hmac, KeyInit, Mac};
 use rand::Rng;
 use sha1::Digest as Sha1Digest;
@@ -33,7 +32,7 @@ pub fn encrypt_buffer_in_place(buf: &mut Vec<u8>, key: &[u8; 24], iv: &[u8; 8]) 
     buf.resize(buf_len.next_multiple_of(des::TdesEde3::block_size()), 0);
 
     let encrypted = TdesCbcEnc::new(key.into(), iv.into())
-        .encrypt_padded_mut::<ZeroPadding>(buf.as_mut_slice(), buf_len)
+        .encrypt_padded::<ZeroPadding>(buf.as_mut_slice(), buf_len)
         .unwrap();
 
     debug_assert_eq!(encrypted.len(), buf.len());
@@ -49,7 +48,7 @@ pub fn decrypt_buffer_in_place(
     iv: &[u8; 8],
 ) -> Result<(), Box<dyn Error>> {
     TdesCbcDec::new(key.into(), iv.into())
-        .decrypt_padded_mut::<ZeroPadding>(buf)
+        .decrypt_padded::<ZeroPadding>(buf)
         .map(|_| ())
         .map_err(|_| DecryptionSnafu {}.build().into())
 }
