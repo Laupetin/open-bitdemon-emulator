@@ -7,7 +7,7 @@ resolver = "1"
 
 [workspace.dependencies]
 chrono = "0.4.44"
-log = "0.4.29"
+log = "0.4.30"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
 rand = "0.10.1"
