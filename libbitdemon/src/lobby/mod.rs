@@ -12,6 +12,7 @@ pub mod matchmaking;
 pub mod profile;
 mod response;
 pub mod rich_presence;
+pub mod stats;
 pub mod storage;
 pub mod title_utilities;
 pub mod twitch;
