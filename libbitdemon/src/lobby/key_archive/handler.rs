@@ -1,11 +1,11 @@
-﻿use crate::lobby::key_archive::result::KeyValuePairWriteResult;
-use crate::lobby::response::task_reply::TaskReply;
 use crate::lobby::LobbyHandler;
+use crate::lobby::key_archive::result::KeyValuePairWriteResult;
+use crate::lobby::response::task_reply::TaskReply;
+use crate::messaging::BdErrorCode;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_reader::BdReader;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
 use crate::messaging::bd_serialization::BdDeserialize;
-use crate::messaging::BdErrorCode;
 use crate::networking::bd_session::BdSession;
 use log::{info, warn};
 use num_traits::FromPrimitive;
@@ -75,7 +75,9 @@ impl KeyArchiveHandler {
 
             // TODO: Call service
 
-            info!("Writing key value pairs for {entity_id} of category {category_id} with kvps: {kvps:?}");
+            info!(
+                "Writing key value pairs for {entity_id} of category {category_id} with kvps: {kvps:?}"
+            );
         }
 
         TaskReply::with_only_error_code(BdErrorCode::NoError, KeyArchiveTaskId::Write).to_response()
@@ -96,7 +98,8 @@ impl KeyArchiveHandler {
             // TODO: Call service
 
             info!(
-                "Requesting key value pairs for {entity_id} of category {category_id} (dedicated={read_dedicated}) with indices: {indices:?}");
+                "Requesting key value pairs for {entity_id} of category {category_id} (dedicated={read_dedicated}) with indices: {indices:?}"
+            );
         }
 
         TaskReply::with_only_error_code(BdErrorCode::NoError, KeyArchiveTaskId::Read).to_response()

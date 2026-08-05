@@ -1,5 +1,5 @@
-use aes::cipher::{BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
 use aes::Aes256;
+use aes::cipher::{BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
 use cbc::cipher::block_padding::ZeroPadding;
 use log::info;
 use rand::Rng;

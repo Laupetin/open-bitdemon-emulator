@@ -1,16 +1,16 @@
-﻿use crate::auth::auth_proof::ClientOpaqueAuthProof;
+use crate::auth::auth_proof::ClientOpaqueAuthProof;
 use crate::auth::authentication::SessionAuthentication;
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::domain::title::Title;
-use crate::lobby::response::lsg_reply::ConnectionIdResponse;
 use crate::lobby::LobbyHandler;
+use crate::lobby::response::lsg_reply::ConnectionIdResponse;
+use crate::messaging::StreamMode::BitMode;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
-use crate::messaging::StreamMode::BitMode;
 use crate::networking::bd_session::BdSession;
 use log::info;
 use num_traits::FromPrimitive;
-use snafu::{ensure, OptionExt, Snafu};
+use snafu::{OptionExt, Snafu, ensure};
 use std::error::Error;
 use std::sync::Arc;
 
@@ -28,7 +28,9 @@ impl LsgHandler {
 enum LobbyServiceError {
     #[snafu(display("The title id is unknown (value={title_id})"))]
     UnknownTitle { title_id: u32 },
-    #[snafu(display("The specified title id does not match (specified_title={specified_title:?} authenticated_title={authenticated_title:?})"))]
+    #[snafu(display(
+        "The specified title id does not match (specified_title={specified_title:?} authenticated_title={authenticated_title:?})"
+    ))]
     InvalidTitle {
         specified_title: Title,
         authenticated_title: Title,

@@ -1,6 +1,6 @@
-﻿use bitdemon::networking::bd_session::SessionId;
+use bitdemon::networking::bd_session::SessionId;
 use bitdemon::networking::session_manager::SessionManager;
-use env_logger::fmt::{style, Formatter};
+use env_logger::fmt::{Formatter, style};
 use log::{LevelFilter, Record};
 use std::cell::Cell;
 use std::fmt::Display;

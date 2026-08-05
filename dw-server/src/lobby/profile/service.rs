@@ -1,4 +1,4 @@
-﻿use crate::lobby::profile::db::{ProfileType, PROFILE_DB};
+use crate::lobby::profile::db::{PROFILE_DB, ProfileType};
 use bitdemon::auth::authentication::SessionAuthentication;
 use bitdemon::lobby::profile::{ProfileInfo, ProfileService, ProfileServiceError};
 use bitdemon::networking::bd_session::BdSession;

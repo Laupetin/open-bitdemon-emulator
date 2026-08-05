@@ -1,6 +1,6 @@
-﻿use crate::lobby::response::lsg_reply::LsgServiceTaskReply;
-use crate::messaging::bd_writer::BdWriter;
+use crate::lobby::response::lsg_reply::LsgServiceTaskReply;
 use crate::messaging::BdErrorCode;
+use crate::messaging::bd_writer::BdWriter;
 use num_traits::ToPrimitive;
 use std::error::Error;
 

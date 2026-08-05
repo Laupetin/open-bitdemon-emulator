@@ -1,11 +1,11 @@
-use crate::auth::auth_handler::steam::SteamAuthHandler;
 use crate::auth::auth_handler::AuthMessageType;
 use crate::auth::auth_handler::ThreadSafeAuthHandler;
+use crate::auth::auth_handler::steam::SteamAuthHandler;
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
 use crate::auth::response::{AuthResponse, AuthResponseWithOnlyCode};
+use crate::messaging::BdErrorCode::AuthIllegalOperation;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::ResponseCreator;
-use crate::messaging::BdErrorCode::AuthIllegalOperation;
 use crate::networking::bd_session::BdSession;
 use crate::networking::bd_socket::BdMessageHandler;
 use log::{info, warn};

@@ -1,11 +1,11 @@
-﻿use crate::domain::result_slice::ResultSlice;
-use crate::lobby::response::task_reply::TaskReply;
+use crate::domain::result_slice::ResultSlice;
 use crate::lobby::LobbyHandler;
+use crate::lobby::response::task_reply::TaskReply;
+use crate::messaging::BdErrorCode;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_reader::BdReader;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
 use crate::messaging::bd_serialization::BdDeserialize;
-use crate::messaging::BdErrorCode;
 use crate::networking::bd_session::BdSession;
 use log::{info, warn};
 use num_traits::FromPrimitive;
@@ -108,7 +108,9 @@ impl VoteRankHandler {
         let item_offset = reader.read_u32()?;
         let item_count = reader.read_u32()?;
 
-        info!("Retrieving vote history unknown={unknown} item_offset={item_offset} item_count={item_count}");
+        info!(
+            "Retrieving vote history unknown={unknown} item_offset={item_offset} item_count={item_count}"
+        );
 
         // Returns result slice with CategorizedRatingInfo
         TaskReply::with_result_slice(

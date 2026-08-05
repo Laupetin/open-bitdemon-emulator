@@ -1,7 +1,7 @@
-﻿use crate::messaging::bd_data_type::{BdDataType, BufferDataType};
 use crate::messaging::StreamMode;
+use crate::messaging::bd_data_type::{BdDataType, BufferDataType};
 use byteorder::{LittleEndian, ReadBytesExt};
-use snafu::{ensure, Snafu};
+use snafu::{Snafu, ensure};
 use std::cmp::min;
 use std::error::Error;
 use std::io::{BufRead, Cursor, Read};
