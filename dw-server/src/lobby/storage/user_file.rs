@@ -25,11 +25,14 @@ impl UserStorageService for DwUserStorageService {
             return Err(StorageServiceError::PermissionDeniedError);
         }
 
+        let title = session.authentication().unwrap().title;
+        let title_num = from_title(title);
+
         let res = STORAGE_DB.with_borrow(|db| {
             db.query_row(
                 "SELECT data FROM user_file u
-                     WHERE u.id = ?1 AND u.owner_id = ?2",
-                (file_id, owner_id),
+                     WHERE u.id = ?1 AND u.owner_id = ?2 AND u.title = ?3",
+                (file_id, owner_id, title_num),
                 |row| row.get(0),
             )
         });
@@ -51,11 +54,14 @@ impl UserStorageService for DwUserStorageService {
             return Err(StorageServiceError::StorageFileNotFoundError);
         }
 
+        let title = session.authentication().unwrap().title;
+        let title_num = from_title(title);
+
         let res: rusqlite::Result<(u8, Vec<u8>)> = STORAGE_DB.with_borrow(|db| {
             db.query_row(
                 "SELECT u.visibility, u.data FROM user_file u
-                     WHERE u.filename = ?1 AND u.owner_id = ?2",
-                (filename.as_str(), owner_id),
+                     WHERE u.filename = ?1 AND u.owner_id = ?2 AND u.title = ?3",
+                (filename.as_str(), owner_id, title_num),
                 |row| Ok((row.get(0)?, row.get(1)?)),
             )
         });
@@ -254,9 +260,12 @@ impl UserStorageService for DwUserStorageService {
             return Err(StorageServiceError::FilenameTooLongError);
         }
 
+        let title = session.authentication().unwrap().title;
+        let title_num = from_title(title);
+
         STORAGE_DB.with_borrow(move |db| {
             let res = db
-                .execute("DELETE FROM user_file u WHERE u.filename = ?", (filename,))
+                .execute("DELETE FROM user_file u WHERE u.filename = ? AND u.owner_id = ?2 AND u.title = ?3", (filename, owner_id, title_num)) 
                 .map_err(|_| StorageServiceError::StorageFileNotFoundError)?;
 
             if res > 0 {
