@@ -83,7 +83,7 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
+        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::UpdateSession)
             .to_response()
     }
 
@@ -92,7 +92,7 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
+        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::DeleteSession)
             .to_response()
     }
 
@@ -101,7 +101,7 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
+        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::FindSessions)
             .to_response()
     }
 
@@ -110,7 +110,7 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
+        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::SubmitPerformance)
             .to_response()
     }
 
@@ -119,8 +119,11 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
-            .to_response()
+        TaskReply::with_only_error_code(
+            BdErrorCode::NoError,
+            MatchmakingTaskId::GetPerformanceValues,
+        )
+        .to_response()
     }
 
     fn update_session_players(
@@ -128,8 +131,11 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
-            .to_response()
+        TaskReply::with_results(
+            MatchmakingTaskId::UpdateSessionPlayers,
+            vec![Box::new(BdSessionIdResult { session_id: 1 })],
+        )
+        .to_response()
     }
 
     fn find_sessions_paged(
@@ -137,7 +143,7 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
+        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::FindSessionsPaged)
             .to_response()
     }
 }
