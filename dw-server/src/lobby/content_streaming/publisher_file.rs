@@ -45,7 +45,9 @@ impl PublisherContentStreamingService for DwPublisherContentStreamingService {
         item_offset: usize,
         item_count: usize,
     ) -> Result<ResultSlice<StreamInfo>, ContentStreamingServiceError> {
-        info!("Listing publisher streams min={min_date_time} category={category} offset={item_offset} count={item_count}");
+        info!(
+            "Listing publisher streams min={min_date_time} category={category} offset={item_offset} count={item_count}"
+        );
 
         let authentication = session
             .authentication()
@@ -83,7 +85,9 @@ impl PublisherContentStreamingService for DwPublisherContentStreamingService {
         item_count: usize,
         filter: String,
     ) -> Result<ResultSlice<StreamInfo>, ContentStreamingServiceError> {
-        info!("Filtering publisher streams filter={filter} min={min_date_time} category={category} offset={item_offset} count={item_count}");
+        info!(
+            "Filtering publisher streams filter={filter} min={min_date_time} category={category} offset={item_offset} count={item_count}"
+        );
 
         let authentication = session
             .authentication()
@@ -142,10 +146,10 @@ impl DwPublisherContentStreamingService {
     ) -> RwLockReadGuard<'_, HashMap<Title, PublisherStreamState>> {
         {
             let lock = self.publisher_streams.read().unwrap();
-            if let Some(stream_state) = lock.get(&title) {
-                if !stream_state.refresh_necessary() {
-                    return lock;
-                }
+            if let Some(stream_state) = lock.get(&title)
+                && !stream_state.refresh_necessary()
+            {
+                return lock;
             }
         }
 
@@ -161,8 +165,7 @@ impl DwPublisherContentStreamingService {
             }
         }
 
-        let lock = self.publisher_streams.read().unwrap();
-        lock
+        self.publisher_streams.read().unwrap()
     }
 }
 
