@@ -1,5 +1,5 @@
-﻿use bitdemon::lobby::group::GroupHandler;
 use bitdemon::lobby::ThreadSafeLobbyHandler;
+use bitdemon::lobby::group::GroupHandler;
 use bitdemon::networking::session_manager::SessionManager;
 use std::sync::Arc;
 

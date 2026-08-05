@@ -1,8 +1,8 @@
-﻿use crate::auth::key_store::BackendPrivateKeyStorage;
+use crate::auth::key_store::BackendPrivateKeyStorage;
 use crate::domain::title::Title;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use num_traits::{FromPrimitive, ToPrimitive};
-use snafu::{ensure, Snafu};
+use snafu::{Snafu, ensure};
 use std::error::Error;
 use std::io::{Cursor, Read, Write};
 

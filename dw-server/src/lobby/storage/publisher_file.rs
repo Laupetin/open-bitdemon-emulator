@@ -1,4 +1,4 @@
-﻿use bitdemon::domain::result_slice::ResultSlice;
+use bitdemon::domain::result_slice::ResultSlice;
 use bitdemon::domain::title::Title;
 use bitdemon::lobby::storage::{
     FileVisibility, PublisherStorageService, StorageFileInfo, StorageServiceError,
@@ -52,7 +52,9 @@ impl PublisherStorageService for DwPublisherStorageService {
         item_offset: usize,
         item_count: usize,
     ) -> Result<ResultSlice<StorageFileInfo>, StorageServiceError> {
-        info!("Listing publisher files min_date_time={min_date_time} item_offset={item_offset} item_count={item_count}");
+        info!(
+            "Listing publisher files min_date_time={min_date_time} item_offset={item_offset} item_count={item_count}"
+        );
 
         let title = session.authentication().unwrap().title;
         let full_dir_path = format!("storage/publisher/{}", title.to_u32().unwrap());
@@ -87,7 +89,9 @@ impl PublisherStorageService for DwPublisherStorageService {
         item_count: usize,
         filter: String,
     ) -> Result<ResultSlice<StorageFileInfo>, StorageServiceError> {
-        info!("Filtering publisher files min_date_time={min_date_time} item_offset={item_offset} item_count={item_count} filter={filter}");
+        info!(
+            "Filtering publisher files min_date_time={min_date_time} item_offset={item_offset} item_count={item_count} filter={filter}"
+        );
 
         let title = session.authentication().unwrap().title;
         let full_dir_path = format!("storage/publisher/{}", title.to_u32().unwrap());

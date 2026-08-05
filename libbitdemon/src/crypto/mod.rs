@@ -1,5 +1,5 @@
-use des::cipher::block_padding::ZeroPadding;
 use des::cipher::KeyIvInit;
+use des::cipher::block_padding::ZeroPadding;
 use des::cipher::{BlockModeDecrypt, BlockModeEncrypt, BlockSizeUser};
 use hmac::{Hmac, KeyInit, Mac};
 use rand::Rng;

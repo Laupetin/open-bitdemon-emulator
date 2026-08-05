@@ -1,4 +1,4 @@
-﻿mod content_streaming;
+mod content_streaming;
 mod counter;
 mod group;
 mod profile;
@@ -13,6 +13,10 @@ use crate::lobby::profile::create_profile_handler;
 use crate::lobby::rich_presence::create_rich_presence_handler;
 use crate::lobby::storage::create_storage_handler;
 use axum::Router;
+use bitdemon::lobby::LobbyServiceId::{
+    Anticheat, BandwidthTest, Counter, Dml, EventLog, Group, KeyArchive, League, Profile,
+    RichPresence, Storage, TitleUtilities, Twitch, VoteRank, Youtube,
+};
 use bitdemon::lobby::anti_cheat::AntiCheatHandler;
 use bitdemon::lobby::bandwidth::BandwidthHandler;
 use bitdemon::lobby::dml::DmlHandler;
@@ -23,10 +27,6 @@ use bitdemon::lobby::title_utilities::TitleUtilitiesHandler;
 use bitdemon::lobby::twitch::TwitchHandler;
 use bitdemon::lobby::vote_rank::VoteRankHandler;
 use bitdemon::lobby::youtube::YoutubeHandler;
-use bitdemon::lobby::LobbyServiceId::{
-    Anticheat, BandwidthTest, Counter, Dml, EventLog, Group, KeyArchive, League, Profile,
-    RichPresence, Storage, TitleUtilities, Twitch, VoteRank, Youtube,
-};
 use bitdemon::lobby::{LobbyServer, LobbyServiceId, ThreadSafeLobbyHandler};
 use bitdemon::networking::session_manager::SessionManager;
 use std::cell::Cell;

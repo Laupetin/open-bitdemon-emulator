@@ -1,10 +1,10 @@
-﻿use crate::domain::title::Title;
+use crate::domain::title::Title;
+use crate::messaging::StreamMode;
 use crate::messaging::bd_serialization::BdSerialize;
 use crate::messaging::bd_writer::BdWriter;
-use crate::messaging::StreamMode;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::ToPrimitive;
-use snafu::{ensure, Snafu};
+use snafu::{Snafu, ensure};
 use std::error::Error;
 
 #[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, FromPrimitive, ToPrimitive)]

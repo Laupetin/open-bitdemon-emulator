@@ -1,8 +1,8 @@
-﻿mod service;
+mod service;
 
 use crate::lobby::rich_presence::service::DwRichPresenceService;
-use bitdemon::lobby::rich_presence::RichPresenceHandler;
 use bitdemon::lobby::ThreadSafeLobbyHandler;
+use bitdemon::lobby::rich_presence::RichPresenceHandler;
 use bitdemon::networking::session_manager::SessionManager;
 use std::sync::Arc;
 

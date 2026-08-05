@@ -1,10 +1,10 @@
-﻿use crate::lobby::response::task_reply::TaskReply;
-use crate::lobby::youtube::result::YoutubeBoolResult;
 use crate::lobby::LobbyHandler;
+use crate::lobby::response::task_reply::TaskReply;
+use crate::lobby::youtube::result::YoutubeBoolResult;
+use crate::messaging::BdErrorCode;
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_reader::BdReader;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
-use crate::messaging::BdErrorCode;
 use crate::networking::bd_session::BdSession;
 use log::{info, warn};
 use num_traits::FromPrimitive;
@@ -108,7 +108,9 @@ impl YoutubeHandler {
             developer_tags.push(reader.read_str()?);
         }
 
-        info!("Trying to upload file {file_id} (private={is_private}; developerTags={developer_tags:?})");
+        info!(
+            "Trying to upload file {file_id} (private={is_private}; developerTags={developer_tags:?})"
+        );
 
         TaskReply::with_only_error_code(
             BdErrorCode::YoutubeServiceError,

@@ -1,7 +1,7 @@
 use crate::crypto::{calculate_hmac, decrypt_buffer_in_place, generate_iv_from_seed};
 use crate::messaging::bd_reader::BdReader;
 use crate::networking::bd_session::BdSession;
-use snafu::{ensure, Snafu};
+use snafu::{Snafu, ensure};
 use std::error::Error;
 
 pub struct BdMessage {

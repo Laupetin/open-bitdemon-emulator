@@ -1,4 +1,4 @@
-﻿use crate::lobby::storage::db::{from_file_visibility, from_title, to_file_visibility, STORAGE_DB};
+use crate::lobby::storage::db::{STORAGE_DB, from_file_visibility, from_title, to_file_visibility};
 use bitdemon::domain::result_slice::ResultSlice;
 use bitdemon::lobby::storage::{
     FileVisibility, StorageFileInfo, StorageServiceError, UserStorageService,
@@ -103,7 +103,9 @@ impl UserStorageService for DwUserStorageService {
         file_data: Vec<u8>,
     ) -> Result<StorageFileInfo, StorageServiceError> {
         let file_size = file_data.len();
-        info!("Uploading file filename={filename} owner_id={owner_id} visibility={visibility:?} len={file_size}");
+        info!(
+            "Uploading file filename={filename} owner_id={owner_id} visibility={visibility:?} len={file_size}"
+        );
 
         let user_id = session.authentication().unwrap().user_id;
         if user_id != owner_id {

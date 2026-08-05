@@ -3,7 +3,7 @@ use crate::networking::bd_session::BdSession;
 use crate::networking::session_manager::SessionManager;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use log::{debug, error, info};
-use snafu::{ensure, Snafu};
+use snafu::{Snafu, ensure};
 use std::error::Error;
 use std::io::{ErrorKind, Read};
 use std::net::TcpListener;

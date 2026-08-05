@@ -18,12 +18,12 @@ pub mod vote_rank;
 pub mod youtube;
 
 use crate::auth::key_store::ThreadSafeBackendPrivateKeyStorage;
+use crate::lobby::LobbyServiceId::LobbyService;
 use crate::lobby::lsg::LsgHandler;
 use crate::lobby::response::task_reply::TaskReply;
-use crate::lobby::LobbyServiceId::LobbyService;
+use crate::messaging::BdErrorCode::{AccessDenied, ServiceNotAvailable};
 use crate::messaging::bd_message::BdMessage;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
-use crate::messaging::BdErrorCode::{AccessDenied, ServiceNotAvailable};
 use crate::networking::bd_session::BdSession;
 use crate::networking::bd_socket::BdMessageHandler;
 use log::{info, warn};
@@ -258,7 +258,9 @@ impl BdMessageHandler for LobbyServer {
         match maybe_handler {
             Some(handler) => {
                 if handler.requires_authentication() && session.authentication().is_none() {
-                    warn!("Tried to service {service_id:?} that requires authentication while being unauthenticated");
+                    warn!(
+                        "Tried to service {service_id:?} that requires authentication while being unauthenticated"
+                    );
                     TaskReply::with_only_error_code(AccessDenied, 0)
                         .to_response()?
                         .send(session)?;

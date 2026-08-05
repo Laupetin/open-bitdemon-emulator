@@ -1,9 +1,9 @@
-﻿use crate::domain::title::Title;
+use crate::domain::title::Title;
+use crate::messaging::StreamMode;
 use crate::messaging::bd_reader::BdReader;
 use crate::messaging::bd_serialization::BdDeserialize;
-use crate::messaging::StreamMode;
 use num_traits::FromPrimitive;
-use snafu::{ensure, OptionExt, Snafu};
+use snafu::{OptionExt, Snafu, ensure};
 use std::error::Error;
 
 pub struct AuthenticationRequest {

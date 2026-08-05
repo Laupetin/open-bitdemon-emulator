@@ -1,8 +1,8 @@
-﻿use crate::lobby::response::BdMessageType;
+use crate::lobby::response::BdMessageType;
 use crate::lobby::response::BdMessageType::LsgServiceConnectionId;
+use crate::messaging::StreamMode::ByteMode;
 use crate::messaging::bd_response::{BdResponse, ResponseCreator};
 use crate::messaging::bd_writer::BdWriter;
-use crate::messaging::StreamMode::ByteMode;
 use num_traits::ToPrimitive;
 use std::error::Error;
 
