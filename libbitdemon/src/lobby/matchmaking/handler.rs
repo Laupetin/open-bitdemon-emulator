@@ -1,4 +1,5 @@
 use crate::lobby::LobbyHandler;
+use crate::lobby::matchmaking::result::BdSessionIdResult;
 use crate::lobby::response::task_reply::TaskReply;
 use crate::messaging::BdErrorCode;
 use crate::messaging::bd_message::BdMessage;
@@ -70,8 +71,11 @@ impl MatchmakingHandler {
         _session: &mut BdSession,
         _reader: &mut BdReader,
     ) -> Result<BdResponse, Box<dyn Error>> {
-        TaskReply::with_only_error_code(BdErrorCode::NoError, MatchmakingTaskId::CreateSession)
-            .to_response()
+        TaskReply::with_results(
+            MatchmakingTaskId::CreateSession,
+            vec![Box::new(BdSessionIdResult { session_id: 1 })],
+        )
+        .to_response()
     }
 
     fn update_session(
